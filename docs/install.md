@@ -24,6 +24,23 @@ Installed files:
 _한국어: 설치 후 실제로 자주 만질 파일은
 `~/.config/buddy-switch/config.env` 하나입니다._
 
+## Where Everything Goes
+
+| Path | Created by installer? | Purpose |
+| --- | --- | --- |
+| `~/.local/bin/buddy-switch-friend` | yes | Runs the friend-profile switch |
+| `~/.local/bin/buddy-switch-work` | yes | Runs the work-profile switch |
+| `~/.local/bin/nothink_proxy.py` | yes, optional | OpenAI-compatible Ollama proxy with `think:false` |
+| `~/.config/buddy-switch/config.env` | yes | Local Buddy Switch settings |
+| `~/.local/state/buddy-switch/` | on first run | Switch logs |
+| `~/.hermes/profiles/<profile>/config.yaml` | no | Add Hermes quick commands manually |
+
+Buddy Switch does not create Hermes profiles and does not write credentials.
+
+_한국어: installer가 직접 만드는 것은 `~/.local/bin`의 명령 파일과
+`~/.config/buddy-switch/config.env`입니다. Hermes 프로필 config는 사용자가
+직접 열어서 quick command만 추가합니다._
+
 ## Configure Profiles
 
 Edit the config file:
@@ -72,6 +89,18 @@ Then restart the active Hermes gateway so it reloads the config.
 
 _한국어: 두 프로필 config에 같은 quick command를 넣어야 어느 모드에서든
 `/friend`, `/work`가 동작합니다._
+
+Typical Hermes paths:
+
+```text
+~/.hermes/profiles/buddy-friend/config.yaml
+~/.hermes/profiles/buddy-work/config.yaml
+```
+
+If your profiles are named differently, use those directories instead.
+
+_한국어: 프로필 이름을 다르게 만들었다면 위 경로의 `buddy-friend`,
+`buddy-work` 부분만 본인 프로필 이름으로 바꿔 생각하면 됩니다._
 
 ## Telegram Usage
 
@@ -131,4 +160,3 @@ This does not remove Hermes profiles, models, logs, sessions, or credentials.
 
 _한국어: 위 삭제는 Buddy Switch 파일만 지웁니다. Hermes 프로필이나 모델,
 대화 기록, 비밀값은 건드리지 않습니다._
-

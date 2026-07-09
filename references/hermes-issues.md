@@ -34,6 +34,10 @@ Buddy Switch is based on existing Hermes profile-routing discussions.
 ## Adjacent Reference
 
 - [OpenClaw agents docs](https://docs.openclaw.ai/cli/agents)
-  - OpenClaw already documents isolated agents and routing bindings. Buddy
-    Switch keeps that as a useful comparison while focusing on Hermes profiles.
-
+  - OpenClaw documents `openclaw agents` for isolated agents, workspaces, and
+    routing bindings.
+  - Representative commands include `openclaw agents add work --workspace
+    ~/.openclaw/workspace-work --bind telegram:*` and `openclaw agents bind
+    --agent work --bind telegram:ops`.
+  - Buddy Switch keeps that as a useful comparison while focusing on Hermes
+    profiles.
