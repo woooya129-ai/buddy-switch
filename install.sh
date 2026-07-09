@@ -30,6 +30,7 @@ install_local_or_remote() {
 }
 
 mkdir -p "$BIN_DIR" "$CONFIG_DIR"
+chmod 700 "$CONFIG_DIR"
 
 install_local_or_remote "examples/scripts/buddy-switch-friend" "buddy-switch-friend"
 install_local_or_remote "examples/scripts/buddy-switch-work" "buddy-switch-work"
@@ -60,8 +61,10 @@ BUDDY_SWITCH_START_OLLAMA_APP="${BUDDY_SWITCH_START_OLLAMA_APP:-0}"
 BUDDY_NOTHINK_PROXY_PORT="${BUDDY_NOTHINK_PROXY_PORT:-11435}"
 BUDDY_NOTHINK_PROXY_BIN="${BUDDY_NOTHINK_PROXY_BIN:-$BIN_DIR/nothink_proxy.py}"
 EOF
+  chmod 600 "$CONFIG_FILE"
   created_config=1
 else
+  chmod 600 "$CONFIG_FILE" 2>/dev/null || true
   created_config=0
 fi
 

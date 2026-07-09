@@ -58,6 +58,11 @@ WORK_MODEL=""
 When set, Buddy Switch tries to unload the opposite Ollama model while
 switching modes.
 
+The installer creates `config.env` with `600` permissions and the config
+directory with `700`. Keep it that way: the switch scripts source this file as
+shell and will refuse to load it if it is group/world-writable. See
+[`../SECURITY.md`](../SECURITY.md) for the full runtime security model.
+
 ## Add Hermes Quick Commands
 
 Add this block to both Hermes profile configs:

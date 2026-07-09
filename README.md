@@ -225,6 +225,15 @@ OpenClaw already exposes isolated agents and routing bindings in its CLI. Buddy
 Switch keeps that idea as a reference point while focusing on Hermes profiles:
 [OpenClaw agents docs](https://docs.openclaw.ai/cli/agents).
 
+## Security
+
+`/friend` and `/work` are `type: exec` quick commands: anyone who can trigger
+them runs a local program on your machine. The Telegram allowlist
+(`TELEGRAM_ALLOWED_USERS`) is the security boundary — set it in every profile
+`.env` before wiring the commands up, and read [SECURITY.md](SECURITY.md) for
+the full runtime security model (file permissions, prompt-injection notes for
+the work profile, and loopback-only model endpoints).
+
 ## License
 
 MIT

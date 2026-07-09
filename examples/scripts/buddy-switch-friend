@@ -3,6 +3,13 @@ set -euo pipefail
 
 CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch/config.env}"
 if [[ -f "$CONFIG_FILE" ]]; then
+  # The config is sourced as shell. Refuse it if group/others can write to it,
+  # otherwise a writable config becomes command injection into this script.
+  config_perm="$(stat -f '%Lp' "$CONFIG_FILE" 2>/dev/null || stat -c '%a' "$CONFIG_FILE" 2>/dev/null || echo '')"
+  if [[ -n "$config_perm" ]] && [[ "$config_perm" =~ [2367].$ || "$config_perm" =~ [2367]$ ]]; then
+    printf '%s\n' "Refusing to load $CONFIG_FILE: it is group/world-writable. Run: chmod 600 $CONFIG_FILE" >&2
+    exit 1
+  fi
   # shellcheck disable=SC1090
   . "$CONFIG_FILE"
 fi
@@ -17,6 +24,8 @@ PROXY_BIN="${BUDDY_NOTHINK_PROXY_BIN:-$HOME/.local/bin/nothink_proxy.py}"
 LOG_DIR="${BUDDY_SWITCH_LOG_DIR:-$HOME/.local/state/buddy-switch}"
 LOG_FILE="$LOG_DIR/mode-switch.log"
 
+# Keep switch logs private to the current user.
+umask 077
 mkdir -p "$LOG_DIR"
 
 (

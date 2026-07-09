@@ -8,6 +8,7 @@ OpenAI-compatible `/v1/chat/completions` endpoint.
 
 import json
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -239,6 +240,14 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    if HOST not in ("127.0.0.1", "localhost", "::1"):
+        print(
+            f"WARNING: binding to {HOST} exposes this proxy beyond localhost. "
+            "It has no authentication; anyone who can reach it can use your "
+            "local models. Keep OLLAMA_NOTHINK_PROXY_HOST on 127.0.0.1 unless "
+            "you know what you are doing.",
+            file=sys.stderr,
+        )
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     print(f"Ollama no-think proxy listening on http://{HOST}:{PORT}")
     server.serve_forever()
