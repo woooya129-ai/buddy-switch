@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch/config.env}"
+if [[ -f "$CONFIG_FILE" ]]; then
+  # shellcheck disable=SC1090
+  . "$CONFIG_FILE"
+fi
+
 FRIEND_PROFILE="${FRIEND_PROFILE:-buddy-friend}"
 WORK_PROFILE="${WORK_PROFILE:-buddy-work}"
 HERMES_BIN="${HERMES_BIN:-hermes}"
@@ -47,4 +53,3 @@ mkdir -p "$LOG_DIR"
 ) >>"$LOG_FILE" 2>&1 &
 
 printf '%s\n' "Switching to friend mode. Send another message in 10-20 seconds."
-
