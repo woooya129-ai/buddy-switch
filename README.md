@@ -2,7 +2,7 @@
 
 ![Buddy Switch: mascot on for chat, robot mode for work](assets/buddy-switch-hero.png)
 
-![How Buddy Switch works: install, configure, use commands, switch Hermes profiles](assets/buddy-switch-flow.png)
+![Buddy Switch model and persona routing variations](assets/buddy-switch-variants.png)
 
 Buddy Switch is a small, practical pattern for running two local Hermes
 profiles from the same messaging surface:
@@ -99,6 +99,55 @@ quick_commands:
 
 See `examples/hermes/config.example.yaml` for a fuller example.
 
+## Model and Persona Variations
+
+![Buddy Switch character sheets: warm persona variants and cool AI model variants](assets/buddy-switch-character-sheet.png)
+
+Buddy Switch treats the model and the persona as two independent routing axes.
+That lets a Telegram command or future handle choose exactly what should
+change:
+
+| Route type | Meaning | Example |
+| --- | --- | --- |
+| Model + Persona | Pick a complete preset. | `work-large` + `analyst` |
+| Fixed Model + New Persona | Keep the same engine, change the voice. | `fixed` + `warm-coach` |
+| New Model + Fixed Persona | Keep the same character, use a stronger engine. | `qwen-work` + `fixed` |
+| Fixed Model + Fixed Persona | Keep the stable default identity. | `fixed` + `fixed` |
+| New Model + New Persona | Switch the whole mode. | `gemma-chat` + `moe-friend` |
+
+Today, Buddy Switch exposes this as profile switching through `/friend` and
+`/work`. A future Hermes feature can expose the same idea as profile, model,
+and persona routing inside one gateway.
+
+## Telegram Handles
+
+For a friendlier Telegram UX, Buddy Switch proposes configured handle-style
+routes. These are not real Telegram accounts; they are local names that the
+gateway recognizes.
+
+```text
+@mika        -> persona route
+@forge       -> model route
+@mika-forge  -> combined model + persona route
+```
+
+Example messages:
+
+```text
+@mika explain this gently
+@forge check the logs
+@mika-forge summarize this for a human
+```
+
+The suggested upstream behavior is:
+
+1. An inline `@handle` can route one message.
+2. `/profile @handle` can bind the current chat to that route.
+3. `/profile default` can reset the chat to the gateway default.
+
+Until Hermes supports this natively, use `/friend` and `/work` as the simple
+fallback.
+
 ## Representative Examples
 
 ### Hermes Today: Buddy Switch Fallback
@@ -161,6 +210,8 @@ The proposed upstream path is:
 2. `/profile ls` and `/profile <name>` for runtime chat binding.
 3. `profile_aliases` so `/friend` and `/work` can be user config, not hard-coded
    Hermes commands.
+4. `route_presets` or handle routes so messages can call `@mika`, `@forge`, or
+   another configured local name.
 
 ## Related Work
 

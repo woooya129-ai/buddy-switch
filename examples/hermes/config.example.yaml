@@ -15,11 +15,34 @@ profile_aliases:
   friend: buddy-friend
   work: buddy-work
 
+# Future named route presets. These are illustrative until Hermes supports
+# handle-style routing.
+route_presets:
+  mika:
+    handle: "@mika"
+    profile: buddy-friend
+    model: fixed
+    persona: personas/moe-rose.md
+  forge:
+    handle: "@forge"
+    profile: buddy-work
+    model: "__WORK_MODEL_NAME__"
+    persona: fixed
+  mika_forge:
+    handle: "@mika-forge"
+    profile: buddy-work
+    model: "__WORK_MODEL_NAME__"
+    persona: personas/moe-rose.md
+
 # Future Telegram routing shape. This is illustrative until Hermes supports it.
 telegram:
   channel_profiles:
     "__TELEGRAM_CHAT_ID_FRIEND__": "buddy-friend"
     "__TELEGRAM_CHAT_ID_WORK__": "buddy-work"
+  handle_routes:
+    enabled: true
+    inline_call: true
+    sticky_binding_command: "/profile"
 
 # Platform-agnostic shape discussed in Hermes issues.
 gateway:
@@ -31,4 +54,3 @@ gateway:
       chat_id: "__TELEGRAM_GROUP_ID__"
       thread_id: "__TELEGRAM_THREAD_ID__"
       profile: buddy-work
-
