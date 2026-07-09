@@ -26,6 +26,8 @@ Korean guide: [`docs/ko.md`](docs/ko.md)
 - `docs/current-workaround.md`: the working fallback using Hermes quick
   commands and gateway restart scripts.
 - `docs/upstream-design.md`: a small upstream-friendly direction for Hermes.
+- `docs/testing.md`: the test matrix and naming guard for implementing the
+  upstream design without hard-coding maintainer-specific names.
 - `examples/`: generic config, scripts, launchd template, and an optional
   Ollama no-think proxy.
 - `references/hermes-issues.md`: relevant upstream issues and adjacent
