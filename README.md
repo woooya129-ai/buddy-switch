@@ -2,6 +2,8 @@
 
 ![Buddy Switch: mascot on for chat, robot mode for work](assets/buddy-switch-hero.png)
 
+![How Buddy Switch works: install, configure, use commands, switch Hermes profiles](assets/buddy-switch-flow.png)
+
 Buddy Switch is a small, practical pattern for running two local Hermes
 profiles from the same messaging surface:
 
