@@ -3,9 +3,6 @@
 Buddy Switch is designed to be installed as a small set of local helper scripts.
 It does not install Hermes, create profiles for you, or touch live credentials.
 
-_한국어: Buddy Switch는 Hermes 자체를 설치하거나 비밀값을 만지지 않습니다.
-로컬 전환 스크립트와 설정 파일만 설치합니다._
-
 ## One-Line Install
 
 ```bash
@@ -21,9 +18,6 @@ Installed files:
 ~/.config/buddy-switch/config.env
 ```
 
-_한국어: 설치 후 실제로 자주 만질 파일은
-`~/.config/buddy-switch/config.env` 하나입니다._
-
 ## Where Everything Goes
 
 | Path | Created by installer? | Purpose |
@@ -36,10 +30,6 @@ _한국어: 설치 후 실제로 자주 만질 파일은
 | `~/.hermes/profiles/<profile>/config.yaml` | no | Add Hermes quick commands manually |
 
 Buddy Switch does not create Hermes profiles and does not write credentials.
-
-_한국어: installer가 직접 만드는 것은 `~/.local/bin`의 명령 파일과
-`~/.config/buddy-switch/config.env`입니다. Hermes 프로필 config는 사용자가
-직접 열어서 quick command만 추가합니다._
 
 ## Configure Profiles
 
@@ -57,9 +47,6 @@ WORK_PROFILE="buddy-work"
 ```
 
 If your Hermes profiles use different names, change only these values first.
-
-_한국어: Hermes 프로필 이름이 다르면 여기서 `FRIEND_PROFILE`,
-`WORK_PROFILE`만 바꾸면 됩니다._
 
 Optional model names:
 
@@ -87,9 +74,6 @@ quick_commands:
 
 Then restart the active Hermes gateway so it reloads the config.
 
-_한국어: 두 프로필 config에 같은 quick command를 넣어야 어느 모드에서든
-`/friend`, `/work`가 동작합니다._
-
 Typical Hermes paths:
 
 ```text
@@ -99,9 +83,6 @@ Typical Hermes paths:
 
 If your profiles are named differently, use those directories instead.
 
-_한국어: 프로필 이름을 다르게 만들었다면 위 경로의 `buddy-friend`,
-`buddy-work` 부분만 본인 프로필 이름으로 바꿔 생각하면 됩니다._
-
 ## Telegram Usage
 
 ```text
@@ -110,9 +91,6 @@ _한국어: 프로필 이름을 다르게 만들었다면 위 경로의 `buddy-f
 ```
 
 After switching, wait 10-20 seconds and send the next message.
-
-_한국어: 전환 명령을 보낸 뒤 바로 대답을 기대하기보다, gateway가 바뀔 시간을
-조금 주고 다음 메시지를 보내는 흐름입니다._
 
 ## Install From a Clone
 
@@ -144,9 +122,6 @@ curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/inst
 
 Existing `config.env` is kept unchanged.
 
-_한국어: 업데이트할 때 installer를 다시 실행해도 기존 설정 파일은 덮어쓰지
-않습니다._
-
 ## Uninstall
 
 ```bash
@@ -157,6 +132,3 @@ rm -rf ~/.config/buddy-switch
 ```
 
 This does not remove Hermes profiles, models, logs, sessions, or credentials.
-
-_한국어: 위 삭제는 Buddy Switch 파일만 지웁니다. Hermes 프로필이나 모델,
-대화 기록, 비밀값은 건드리지 않습니다._

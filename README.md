@@ -8,9 +8,6 @@ profiles from the same messaging surface:
 - a light "friend" profile for relaxed chat
 - a stronger "work" profile for tools, files, search, and terminal tasks
 
-_한국어: Buddy Switch는 Hermes에서 가벼운 대화용 프로필과 강한 작업용
-프로필을 `/friend`, `/work`로 쉽게 오가게 만드는 공개용 패턴입니다._
-
 The current workaround switches the active Telegram gateway with `/friend` and
 `/work`. The long-term goal is upstream Hermes profile routing, where one
 gateway can dispatch a chat, thread, user, or command to the right isolated
@@ -19,6 +16,8 @@ profile without restarting the gateway.
 This repo is deliberately curated. It is not a copy of a live Hermes home, and
 it does not include secrets, state databases, logs, process snapshots, or full
 private persona files.
+
+Korean guide: [`docs/ko.md`](docs/ko.md)
 
 ## What Is Included
 
@@ -46,10 +45,6 @@ This installs:
 - `~/.config/buddy-switch/config.env`
 - later, runtime logs go under `~/.local/state/buddy-switch/`
 
-_한국어: 가장 쉬운 설치는 위 한 줄입니다. 설치 후
-`~/.config/buddy-switch/config.env`에서 Hermes 프로필 이름만 본인 환경에
-맞게 바꾸면 됩니다._
-
 ## Where Does It Go?
 
 Buddy Switch installs helper files next to your user tools. It does not install
@@ -63,10 +58,6 @@ Hermes, OpenClaw, models, bot tokens, or credentials.
 | `~/.config/buddy-switch/config.env` | The one file you usually edit |
 | `~/.local/state/buddy-switch/` | Logs created after the first switch |
 | `~/.hermes/profiles/<profile>/config.yaml` | Hermes config you edit manually |
-
-_한국어: 설치 파일은 대부분 `~/.local/bin`과 `~/.config/buddy-switch`에
-들어갑니다. Hermes 프로필 설정 파일은 자동으로 고치지 않으니,
-`~/.hermes/profiles/<프로필명>/config.yaml`에 quick command를 직접 추가하세요._
 
 If you prefer cloning first:
 
@@ -104,10 +95,6 @@ quick_commands:
 5. In Telegram, send `/friend` or `/work`, wait for the gateway to switch, then
    send the next message.
 
-_한국어: `buddy-friend`, `buddy-work`라는 이름으로 프로필을 만들면 거의 바로
-쓸 수 있습니다. 다른 이름을 쓰면 config 파일에서 `FRIEND_PROFILE`,
-`WORK_PROFILE`만 바꿔주세요._
-
 See `examples/hermes/config.example.yaml` for a fuller example.
 
 ## Representative Examples
@@ -129,10 +116,6 @@ Those names are local quick commands:
   -> hermes -p buddy-work gateway start
 ```
 
-_한국어: Hermes에서는 `/friend`, `/work`를 quick command로 연결합니다.
-명령을 받으면 Buddy Switch 스크립트가 어떤 Hermes profile gateway를 켤지
-정하는 구조입니다._
-
 ### OpenClaw Reference: Native Agent Routing
 
 OpenClaw already has a first-class CLI surface for isolated agents and routing
@@ -148,9 +131,6 @@ Buddy Switch is the Hermes-side local fallback for the same idea: keep separate
 personalities, tools, memory, and workspaces, then route the message to the
 right one.
 
-_한국어: OpenClaw는 agent와 routing binding을 CLI에서 직접 다룹니다. Buddy
-Switch는 Hermes에서 그와 비슷한 사용감을 로컬 우회로 먼저 구현한 예시입니다._
-
 ## Current Workaround
 
 The workaround is intentionally simple:
@@ -163,9 +143,6 @@ The workaround is intentionally simple:
 It works today, but it is not the ideal upstream shape. Restarting the gateway
 is a local fallback. A proper Hermes feature should route a message to a named
 profile inside a single gateway process.
-
-_한국어: 지금 방식은 실사용 가능한 우회입니다. 다만 장기적으로는 gateway를
-재시작하지 않고 Hermes 내부에서 profile routing을 하는 게 목표입니다._
 
 ## Upstream Direction
 
@@ -182,10 +159,6 @@ The proposed upstream path is:
 2. `/profile ls` and `/profile <name>` for runtime chat binding.
 3. `profile_aliases` so `/friend` and `/work` can be user config, not hard-coded
    Hermes commands.
-
-_한국어: upstream에 올릴 때는 `/friend`, `/work`를 고정 기능으로 넣기보다
-사용자가 alias로 정의할 수 있는 범용 profile routing 기능으로 가는 것이
-맞습니다._
 
 ## Related Work
 
