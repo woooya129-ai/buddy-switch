@@ -15,6 +15,10 @@ Buddy Switch is based on existing Hermes profile-routing discussions.
   - Shows the same problem outside Telegram.
   - Useful evidence that this should become gateway-level routing, not a
     Telegram-only workaround.
+- [#29535 - route chat/thread messages to profiles in a single gateway](https://github.com/NousResearch/hermes-agent/issues/29535)
+  - Proposes a `profile_routes` block and lists what must be profile-scoped:
+    config, `.env`, model, memory, session store, workspace, SOUL, tools, logs.
+  - The closest existing sketch of the full routing layer.
 
 ## Related
 
@@ -30,6 +34,9 @@ Buddy Switch is based on existing Hermes profile-routing discussions.
 - [#29092](https://github.com/NousResearch/hermes-agent/issues/29092) and
   [#4707](https://github.com/NousResearch/hermes-agent/issues/4707)
   - Profile-scoped gateway/service pitfalls.
+- [#52635 - work-profile gateway silently drops forum-topic messages](https://github.com/NousResearch/hermes-agent/issues/52635)
+  - Adapter-level message loss to watch for when implementing topic routing;
+    covered by a regression case in `../docs/testing.md`.
 
 ## Adjacent Reference
 

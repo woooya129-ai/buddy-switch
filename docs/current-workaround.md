@@ -62,3 +62,14 @@ This approach is a good local fallback, but it has limits:
 The upstream version should route messages to a selected profile inside one
 gateway process.
 
+## Workaround-to-Upstream Mapping
+
+Each workaround step has a cleaner upstream replacement:
+
+| Workaround step | Problem | Upstream replacement |
+| --- | --- | --- |
+| Quick command runs a shell script | Shell and local-path dependent | Router resolves the command inside the gateway |
+| Stop one gateway, start another | 10-20 second gap, pid/service races | In-process profile context switch, no restart |
+| One service (launchd/systemd) per profile | Two services to manage, state can drift | One gateway process serving all profiles |
+| `/friend` and `/work` as local names | Reads like a built-in, but is not | User-defined `profile_aliases` |
+

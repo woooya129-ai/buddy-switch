@@ -80,6 +80,42 @@ profile_aliases:
 Aliases let users create `/friend` and `/work` behavior from config without
 hard-coding those names in Hermes.
 
+### Later Route Extensions
+
+`channel_profiles` covers chats. The same shape extends naturally, and each
+extension already has an upstream issue:
+
+```yaml
+telegram:
+  topic_profiles:
+    "__CHAT_ID__:__THREAD_ID__": "buddy-work"
+  user_profiles:
+    "__USER_ID__": "buddy-friend"
+```
+
+- Forum topic to profile: #10143, #4321
+- Per-user routing: #33548
+
+These should reuse one shared route-matching layer instead of adding
+platform-specific code paths per extension.
+
+### Profile Creation Onboarding
+
+Switching assumes profiles already exist. A small creation flow makes the
+feature usable for first-time setups:
+
+- `hermes profile create <name>`: a wizard asking for an existing profile to
+  copy (`--from`), a provider/model picked from configured providers, a tools
+  preset (minimal / full / custom), a persona starting template, and an
+  optional alias.
+- Non-interactive flags for scripting: `--from`, `--model`, `--tools`,
+  `--alias`.
+- Optional chat surface: `/profile new <name>` (admin only).
+- First-run onboarding: when a gateway starts with zero profiles, suggest the
+  wizard.
+- Templates stay role-based ("light chat", "full tools"). No specific model is
+  ever a default; the user always picks.
+
 ### Telegram Handle Routing
 
 Handle routes are configured names that feel like talking to a person in
@@ -147,6 +183,9 @@ keeping the legacy default session key shape for backward compatibility.
 3. Add `profile_aliases` so `/friend` and `/work` are user-defined aliases.
 4. Add configured `route_presets` or handle routes for example local `@name`
    calls.
+
+Per-stage test cases, fixtures, and the naming guard live in
+[`testing.md`](testing.md).
 
 Relevant issues:
 
