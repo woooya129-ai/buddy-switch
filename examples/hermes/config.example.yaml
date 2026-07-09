@@ -1,0 +1,34 @@
+# Buddy Switch example config.
+# Copy the relevant blocks into your Hermes profile configs and replace names.
+
+quick_commands:
+  friend:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-friend"
+  work:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-work"
+
+# Future upstream-friendly shape. These aliases should become config, not
+# hard-coded commands.
+profile_aliases:
+  friend: buddy-friend
+  work: buddy-work
+
+# Future Telegram routing shape. This is illustrative until Hermes supports it.
+telegram:
+  channel_profiles:
+    "__TELEGRAM_CHAT_ID_FRIEND__": "buddy-friend"
+    "__TELEGRAM_CHAT_ID_WORK__": "buddy-work"
+
+# Platform-agnostic shape discussed in Hermes issues.
+gateway:
+  profile_routes:
+    - platform: telegram
+      chat_id: "__TELEGRAM_CHAT_ID__"
+      profile: buddy-friend
+    - platform: telegram
+      chat_id: "__TELEGRAM_GROUP_ID__"
+      thread_id: "__TELEGRAM_THREAD_ID__"
+      profile: buddy-work
+

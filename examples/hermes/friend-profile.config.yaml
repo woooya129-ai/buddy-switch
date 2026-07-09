@@ -1,0 +1,25 @@
+# Minimal friend profile example.
+
+model:
+  provider: openai-compatible
+  name: "__FRIEND_MODEL_NAME__"
+  base_url: "http://127.0.0.1:11435/v1"
+  api_key: "ollama"
+
+generation:
+  max_tokens: 512
+  temperature: 0.6
+  top_p: 0.75
+  top_k: 20
+
+quick_commands:
+  friend:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-friend"
+  work:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-work"
+
+# For a lightweight companion profile, keep heavy tools disabled unless you
+# explicitly want them available.
+

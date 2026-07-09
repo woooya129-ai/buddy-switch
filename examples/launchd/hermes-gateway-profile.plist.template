@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ai.hermes.gateway.__PROFILE_NAME__</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__HOME__/.hermes/hermes-agent/venv/bin/python</string>
+    <string>-m</string>
+    <string>hermes_cli.main</string>
+    <string>--profile</string>
+    <string>__PROFILE_NAME__</string>
+    <string>gateway</string>
+    <string>run</string>
+    <string>--replace</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__HOME__/.hermes/profiles/__PROFILE_NAME__</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>__HOME__/.hermes/hermes-agent/venv/bin:__HOME__/.hermes/hermes-agent/node_modules/.bin:__HOME__/.hermes/node/bin:__HOME__/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>VIRTUAL_ENV</key>
+    <string>__HOME__/.hermes/hermes-agent/venv</string>
+    <key>HERMES_HOME</key>
+    <string>__HOME__/.hermes/profiles/__PROFILE_NAME__</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <false/>
+  <key>KeepAlive</key>
+  <false/>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/.hermes/profiles/__PROFILE_NAME__/logs/gateway.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/.hermes/profiles/__PROFILE_NAME__/logs/gateway.error.log</string>
+</dict>
+</plist>
+

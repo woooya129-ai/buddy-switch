@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FRIEND_PROFILE="${FRIEND_PROFILE:-buddy-friend}"
+WORK_PROFILE="${WORK_PROFILE:-buddy-work}"
+HERMES_BIN="${HERMES_BIN:-hermes}"
+OLLAMA_BIN="${OLLAMA_BIN:-ollama}"
+OLLAMA_PORT="${OLLAMA_PORT:-11434}"
+PROXY_PORT="${BUDDY_NOTHINK_PROXY_PORT:-11435}"
+PROXY_BIN="${BUDDY_NOTHINK_PROXY_BIN:-$HOME/.local/bin/nothink_proxy.py}"
+LOG_DIR="${BUDDY_SWITCH_LOG_DIR:-$HOME/.local/state/buddy-switch}"
+LOG_FILE="$LOG_DIR/mode-switch.log"
+
+mkdir -p "$LOG_DIR"
+
+(
+  set -euo pipefail
+
+  if command -v lsof >/dev/null 2>&1; then
+    if ! lsof -nP -iTCP:"$OLLAMA_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+      if [[ "${BUDDY_SWITCH_START_OLLAMA_APP:-0}" == "1" ]] && command -v open >/dev/null 2>&1; then
+        open -a Ollama || true
+      fi
+      for _ in {1..30}; do
+        lsof -nP -iTCP:"$OLLAMA_PORT" -sTCP:LISTEN >/dev/null 2>&1 && break
+        sleep 1
+      done
+    fi
+  fi
+
+  if command -v lsof >/dev/null 2>&1; then
+    if ! lsof -nP -iTCP:"$PROXY_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+      if [[ -x "$PROXY_BIN" ]]; then
+        nohup env OLLAMA_NOTHINK_PROXY_PORT="$PROXY_PORT" "$PROXY_BIN" \
+          >>"$LOG_DIR/nothink-proxy.log" 2>&1 &
+      fi
+    fi
+  fi
+
+  if [[ -n "${WORK_MODEL:-}" ]]; then
+    "$OLLAMA_BIN" stop "$WORK_MODEL" >/dev/null 2>&1 || true
+  fi
+
+  "$HERMES_BIN" -p "$WORK_PROFILE" gateway stop >/dev/null 2>&1 || true
+  "$HERMES_BIN" gateway stop >/dev/null 2>&1 || true
+  "$HERMES_BIN" -p "$FRIEND_PROFILE" gateway start
+) >>"$LOG_FILE" 2>&1 &
+
+printf '%s\n' "Switching to friend mode. Send another message in 10-20 seconds."
+

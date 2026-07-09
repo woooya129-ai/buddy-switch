@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Never commit live credentials or runtime state.
+.env
+.env.*
+!.env.example
+logs/
+*.log
+state.db
+sessions/
+*.pid
+*.lock
+
