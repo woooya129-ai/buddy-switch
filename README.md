@@ -107,6 +107,9 @@ Buddy Switch treats the model and the persona as two independent routing axes.
 That lets a Telegram command or future handle choose exactly what should
 change:
 
+The table below is an example routing matrix. Buddy Switch does not bundle real
+persona prompt files or five finished personalities.
+
 | Route type | Meaning | Example |
 | --- | --- | --- |
 | Model + Persona | Pick a complete preset. | `work-large` + `analyst` |
@@ -123,7 +126,8 @@ and persona routing inside one gateway.
 
 For a friendlier Telegram UX, Buddy Switch proposes configured handle-style
 routes. These are not real Telegram accounts; they are local names that the
-gateway recognizes.
+gateway recognizes. The names below are examples; replace them with names that
+fit your own setup.
 
 ```text
 @mika        -> persona route
@@ -210,8 +214,8 @@ The proposed upstream path is:
 2. `/profile ls` and `/profile <name>` for runtime chat binding.
 3. `profile_aliases` so `/friend` and `/work` can be user config, not hard-coded
    Hermes commands.
-4. `route_presets` or handle routes so messages can call `@mika`, `@forge`, or
-   another configured local name.
+4. `route_presets` or handle routes so messages can call example names like
+   `@mika`, `@forge`, or another configured local name.
 
 ## Related Work
 

@@ -26,6 +26,9 @@ Profile routing should be allowed to select a complete profile, but the user
 experience should also make it clear that model and persona can be controlled
 independently.
 
+The rows below are routing examples. They are not a bundled set of persona
+prompt files.
+
 | Route type | Meaning |
 | --- | --- |
 | Model + Persona | Select a complete preset. |
@@ -35,8 +38,8 @@ independently.
 | New Model + New Persona | Switch both axes at once. |
 
 This keeps `/model` from becoming a hidden profile switch, while still allowing
-advanced users to build named routes such as `@mika`, `@forge`, or
-`@mika-forge`.
+advanced users to build named routes. Names such as `@mika`, `@forge`, and
+`@mika-forge` are examples, not required defaults.
 
 ### Static Telegram Routing
 
@@ -81,6 +84,8 @@ hard-coding those names in Hermes.
 
 Handle routes are configured names that feel like talking to a person in
 Telegram, without requiring one Telegram bot account per route.
+
+The handles below are examples.
 
 ```yaml
 route_presets:
@@ -140,7 +145,8 @@ keeping the legacy default session key shape for backward compatibility.
 1. Implement `telegram.channel_profiles` for static chat-to-profile routing.
 2. Add `/profile ls` and `/profile <name>` for runtime chat binding.
 3. Add `profile_aliases` so `/friend` and `/work` are user-defined aliases.
-4. Add configured `route_presets` or handle routes for local `@name` calls.
+4. Add configured `route_presets` or handle routes for example local `@name`
+   calls.
 
 Relevant issues:
 

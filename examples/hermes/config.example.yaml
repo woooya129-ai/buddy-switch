@@ -15,8 +15,8 @@ profile_aliases:
   friend: buddy-friend
   work: buddy-work
 
-# Future named route presets. These are illustrative until Hermes supports
-# handle-style routing.
+# Future named route presets. These names are examples and are illustrative
+# until Hermes supports handle-style routing.
 route_presets:
   mika:
     handle: "@mika"
