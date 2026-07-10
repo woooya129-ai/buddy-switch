@@ -44,6 +44,8 @@ the English README; corrections and additional language PRs are welcome.
 - `docs/fork-readiness.md`: the verified Hermes and OpenClaw fork baseline.
 - `docs/personas.md`: how SOUL files, language policy, and model choice fit
   together.
+- `docs/friends-picker.md`: the shared `/friends` discovery flow for Telegram
+  and terminals.
 - `examples/`: generic config, scripts, launchd template, and an optional
   Ollama no-think proxy.
 - `references/hermes-issues.md`: relevant upstream issues and adjacent
@@ -61,6 +63,7 @@ This installs:
 
 - `~/.local/bin/buddy-switch-friend`
 - `~/.local/bin/buddy-switch-work`
+- `~/.local/bin/buddy-switch-routes`
 - `~/.local/bin/buddy-switch-init`
 - `~/.local/bin/nothink_proxy.py`
 - `~/.config/buddy-switch/config.env`
@@ -81,6 +84,7 @@ Hermes, OpenClaw, models, bot tokens, or credentials.
 | --- | --- |
 | `~/.local/bin/buddy-switch-friend` | Command run by `/friend` |
 | `~/.local/bin/buddy-switch-work` | Command run by `/work` |
+| `~/.local/bin/buddy-switch-routes` | Shows the current route, model, personality, and choices |
 | `~/.local/bin/buddy-switch-init` | First-run profile and SOUL draft generator |
 | `~/.local/bin/nothink_proxy.py` | Optional Ollama `think:false` proxy |
 | `~/.config/buddy-switch/config.env` | The one file you usually edit |
@@ -121,16 +125,29 @@ See `docs/install.md` for the full setup flow.
 
    ```yaml
    quick_commands:
+     friends:
+       type: exec
+       command: "$HOME/.local/bin/buddy-switch-routes"
+       category: catalog
+       label: "Choose a friend"
      friend:
        type: exec
        command: "$HOME/.local/bin/buddy-switch-friend"
+       category: route
+       label: "Friend"
      work:
        type: exec
        command: "$HOME/.local/bin/buddy-switch-work"
+       category: route
+       label: "Work"
    ```
 
-6. In Telegram, send `/friend` or `/work`, wait for the gateway to switch, then
-   send the next message.
+6. Run `buddy-switch-routes` in a terminal or send `/friends` in Telegram to
+   see the current profile, personality, model, and available routes. On stock
+   Hermes this is a readable text menu; the Buddy Switch Hermes fork adds
+   native Telegram buttons.
+7. Choose `/friend` or `/work`, wait for the gateway to switch, then send the
+   next message.
 
 See `examples/hermes/config.example.yaml` for a fuller example.
 
@@ -172,12 +189,43 @@ Today, Buddy Switch exposes this as profile switching through `/friend` and
 `/work`. A future Hermes feature can expose the same idea as profile, model,
 and persona routing inside one gateway.
 
+## Find Routes Without Memorizing Them
+
+`/friends` is the front door. It answers the three questions people usually
+forget:
+
+```text
+Who am I talking to?  -> active profile or agent
+How will it answer?   -> personality / SOUL
+What is running it?   -> provider and model
+```
+
+On Telegram, the Hermes fork renders **Personality**, **Model**, and **Routes**
+as buttons. A model choice reuses Hermes's existing model picker; a personality
+choice reuses `/personality`; a route choice runs only a quick command marked
+`category: route`. If buttons are unavailable, the same screen includes exact
+text commands.
+
+In a terminal:
+
+```bash
+buddy-switch-routes
+# Hermes fork CLI also supports:
+/friends
+/friends personality <name>
+/friends model <provider/model>
+/friends route <name>
+```
+
+See [`docs/friends-picker.md`](docs/friends-picker.md) for the complete behavior.
+
 ## Telegram Handles
 
-For a friendlier Telegram UX, Buddy Switch proposes configured handle-style
-routes. These are not real Telegram accounts; they are local names that the
-gateway recognizes. The names below are examples; replace them with names that
-fit your own setup.
+For a friendlier Telegram UX, Buddy Switch uses two compatible handle shapes.
+In the Hermes design they are configured local route names, not Telegram
+accounts. In OpenClaw, the most dependable version today is one real Telegram
+bot account per agent, with its account display name set to the bot's actual
+`@username`.
 
 ```text
 @mika        -> persona route
@@ -199,8 +247,8 @@ The suggested upstream behavior is:
 2. `/profile @handle` can bind the current chat to that route.
 3. `/profile default` can reset the chat to the gateway default.
 
-Until Hermes supports this natively, use `/friend` and `/work` as the simple
-fallback.
+Until Hermes supports inline handles natively, open `/friends` and tap a route,
+or type `/friend` and `/work` as the simple fallback.
 
 ## Representative Examples
 
@@ -231,6 +279,19 @@ openclaw agents add work --workspace ~/.openclaw/workspace-work --bind telegram:
 openclaw agents bind --agent work --bind telegram:ops
 openclaw agents bindings --agent work
 ```
+
+For Telegram, bind each agent to a named bot account and set the account's
+display `name` to its real bot username. Then `/friends` in the OpenClaw fork
+can show a direct button to that bot:
+
+```text
+@mika_chat_bot   -> friend agent + its SOUL + its model
+@mika_work_bot   -> work agent + its SOUL + its model
+```
+
+See [`examples/openclaw/config.example.json5`](examples/openclaw/config.example.json5).
+Telegram usernames do not allow hyphens, so use underscores in the real
+`@username`; keep a friendlier `Mika - Work` label in prose or UI.
 
 Buddy Switch is the Hermes-side local fallback for the same idea: keep separate
 personalities, tools, memory, and workspaces, then route the message to the
@@ -275,8 +336,8 @@ Switch keeps that idea as a reference point while focusing on Hermes profiles:
 
 ## Security
 
-`/friend` and `/work` are `type: exec` quick commands: anyone who can trigger
-them runs a local program on your machine. The Telegram allowlist
+`/friend`, `/work`, and the text fallback for `/friends` are `type: exec` quick
+commands: anyone who can trigger them runs a local program on your machine. The Telegram allowlist
 (`TELEGRAM_ALLOWED_USERS`) is the security boundary — set it in every profile
 `.env` before wiring the commands up, and read [SECURITY.md](SECURITY.md) for
 the full runtime security model (file permissions, prompt-injection notes for

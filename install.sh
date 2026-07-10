@@ -83,20 +83,22 @@ install_local_or_remote() {
 
 mkdir -p "$BIN_DIR" "$CONFIG_DIR"
 chmod 700 "$CONFIG_DIR"
-show_progress 1 6 "Prepared local folders"
+show_progress 1 7 "Prepared local folders"
 
 install_local_or_remote "examples/scripts/buddy-switch-friend" "buddy-switch-friend"
-show_progress 2 6 "Installed the friend switch"
+show_progress 2 7 "Installed the friend switch"
 install_local_or_remote "examples/scripts/buddy-switch-work" "buddy-switch-work"
-show_progress 3 6 "Installed the work switch"
+show_progress 3 7 "Installed the work switch"
+install_local_or_remote "examples/scripts/buddy-switch-routes" "buddy-switch-routes"
+show_progress 4 7 "Installed the route catalog"
 install_local_or_remote "examples/scripts/buddy-switch-init" "buddy-switch-init"
-show_progress 4 6 "Installed the first-run setup"
+show_progress 5 7 "Installed the first-run setup"
 
 if [[ "$INSTALL_NOTHINK_PROXY" != "0" ]]; then
   install_local_or_remote "examples/ollama/nothink_proxy.py" "nothink_proxy.py"
-  show_progress 5 6 "Installed the optional no-think proxy"
+  show_progress 6 7 "Installed the optional no-think proxy"
 else
-  show_progress 5 6 "Skipped the optional no-think proxy"
+  show_progress 6 7 "Skipped the optional no-think proxy"
 fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -128,7 +130,7 @@ else
   created_config=0
 fi
 
-show_progress 6 6 "Finished installing Buddy Switch"
+show_progress 7 7 "Finished installing Buddy Switch"
 show_awake_animation
 
 setup_ran=0
@@ -149,6 +151,7 @@ Buddy Switch installed.
 Commands:
   $BIN_DIR/buddy-switch-friend
   $BIN_DIR/buddy-switch-work
+  $BIN_DIR/buddy-switch-routes
   $BIN_DIR/buddy-switch-init
 
 Config:
@@ -157,7 +160,7 @@ Config:
 Next:
   1. $setup_next
   2. Add the quick_commands block from the README to both Hermes profile configs.
-  3. Send /friend or /work in Telegram.
+  3. Run buddy-switch-routes in a terminal, or send /friends in Telegram.
 EOF
 
 if [[ "$created_config" == "0" ]]; then

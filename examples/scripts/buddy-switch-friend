@@ -23,6 +23,7 @@ PROXY_PORT="${BUDDY_NOTHINK_PROXY_PORT:-11435}"
 PROXY_BIN="${BUDDY_NOTHINK_PROXY_BIN:-$HOME/.local/bin/nothink_proxy.py}"
 LOG_DIR="${BUDDY_SWITCH_LOG_DIR:-$HOME/.local/state/buddy-switch}"
 LOG_FILE="$LOG_DIR/mode-switch.log"
+CURRENT_ROUTE_FILE="${BUDDY_SWITCH_CURRENT_ROUTE_FILE:-$LOG_DIR/current-route}"
 
 # Keep switch logs private to the current user.
 umask 077
@@ -59,6 +60,7 @@ mkdir -p "$LOG_DIR"
   "$HERMES_BIN" -p "$WORK_PROFILE" gateway stop >/dev/null 2>&1 || true
   "$HERMES_BIN" gateway stop >/dev/null 2>&1 || true
   "$HERMES_BIN" -p "$FRIEND_PROFILE" gateway start
+  printf '%s\n' 'friend' >"$CURRENT_ROUTE_FILE"
 ) >>"$LOG_FILE" 2>&1 &
 
 printf '%s\n' "Switching to friend mode. Send another message in 10-20 seconds."

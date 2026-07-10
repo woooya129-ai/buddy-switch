@@ -42,13 +42,27 @@ Put this in both profile configs, adjusting paths if needed:
 
 ```yaml
 quick_commands:
+  friends:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-routes"
+    category: catalog
+    label: "Choose a friend"
   friend:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-friend"
+    category: route
+    label: "Friend"
   work:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-work"
+    category: route
+    label: "Work"
 ```
+
+`/friends` is read-only on the standalone workaround. It reports the current
+route and gives users the exact switch commands, so route names do not need to
+be memorized. The Hermes fork recognizes the metadata and renders native
+Telegram selection buttons.
 
 ## Tradeoffs
 
@@ -72,4 +86,3 @@ Each workaround step has a cleaner upstream replacement:
 | Stop one gateway, start another | 10-20 second gap, pid/service races | In-process profile context switch, no restart |
 | One service (launchd/systemd) per profile | Two services to manage, state can drift | One gateway process serving all profiles |
 | `/friend` and `/work` as local names | Reads like a built-in, but is not | User-defined `profile_aliases` |
-

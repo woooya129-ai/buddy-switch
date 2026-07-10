@@ -36,16 +36,40 @@ curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/inst
 
 ```yaml
 quick_commands:
+  friends:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-routes"
+    category: catalog
+    label: "친구 선택"
   friend:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-friend"
+    category: route
+    label: "친구"
   work:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-work"
+    category: route
+    label: "업무"
 ```
 
-gateway를 재시작한 뒤 Telegram에서 `/friend` 또는 `/work`를 보내고 10~20초 후
-다음 메시지를 보냅니다.
+gateway를 재시작한 뒤 Telegram에서 `/friends`를 보내면 현재 프로필, 성격,
+모델과 선택 가능한 라우터를 확인할 수 있습니다. 기본 Hermes에서는 짧은 텍스트
+목록으로 보이고 Buddy Switch Hermes 포크에서는 버튼으로 보입니다. `/friend`
+또는 `/work`를 고른 뒤 10~20초 후 다음 메시지를 보냅니다.
+
+터미널에서는 아래 명령 하나로 외우기 어려운 라우터를 다시 찾습니다.
+
+```bash
+buddy-switch-routes
+```
+
+OpenClaw에서는 agent 하나가 SOUL·모델·작업공간을 묶은 친구 역할을 합니다.
+Telegram account의 표시 이름을 실제 봇 사용자명인 `@이름_역할_bot` 형태로 두고
+agent에 binding하면, OpenClaw 포크의 `/friends`가 해당 봇으로 바로 가는 버튼을
+표시합니다. Telegram 사용자명에는 하이픈을 쓸 수 없으므로 실제 호출명은
+언더스코어를 쓰고, 화면의 설명은 `이름 - 역할`처럼 읽기 좋게 적습니다. 이는
+예시 작명 규칙이며 완성된 성격을 배포한다는 뜻은 아닙니다.
 
 ## 성격과 언어
 

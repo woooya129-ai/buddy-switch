@@ -2,12 +2,24 @@
 # Copy the relevant blocks into your Hermes profile configs and replace names.
 
 quick_commands:
+  friends:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-routes"
+    category: catalog
+    label: "Choose a friend"
+    description: "Show the current profile, personality, model, and routes"
   friend:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-friend"
+    category: route
+    label: "Friend"
+    description: "Switch to the light chat profile"
   work:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-work"
+    category: route
+    label: "Work"
+    description: "Switch to the tool-enabled work profile"
 
 # Future upstream-friendly shape. These aliases should become config, not
 # hard-coded commands.

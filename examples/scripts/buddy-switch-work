@@ -21,6 +21,7 @@ OLLAMA_BIN="${OLLAMA_BIN:-ollama}"
 OLLAMA_PORT="${OLLAMA_PORT:-11434}"
 LOG_DIR="${BUDDY_SWITCH_LOG_DIR:-$HOME/.local/state/buddy-switch}"
 LOG_FILE="$LOG_DIR/mode-switch.log"
+CURRENT_ROUTE_FILE="${BUDDY_SWITCH_CURRENT_ROUTE_FILE:-$LOG_DIR/current-route}"
 
 # Keep switch logs private to the current user.
 umask 077
@@ -48,6 +49,7 @@ mkdir -p "$LOG_DIR"
   "$HERMES_BIN" -p "$FRIEND_PROFILE" gateway stop >/dev/null 2>&1 || true
   "$HERMES_BIN" gateway stop >/dev/null 2>&1 || true
   "$HERMES_BIN" -p "$WORK_PROFILE" gateway start
+  printf '%s\n' 'work' >"$CURRENT_ROUTE_FILE"
 ) >>"$LOG_FILE" 2>&1 &
 
 printf '%s\n' "Switching to work mode. Send another message in 10-20 seconds."

@@ -14,6 +14,7 @@ Installed files:
 ```text
 ~/.local/bin/buddy-switch-friend
 ~/.local/bin/buddy-switch-work
+~/.local/bin/buddy-switch-routes
 ~/.local/bin/buddy-switch-init
 ~/.local/bin/nothink_proxy.py
 ~/.config/buddy-switch/config.env
@@ -31,6 +32,7 @@ creates editable SOUL drafts; it does not overwrite Hermes files.
 | --- | --- | --- |
 | `~/.local/bin/buddy-switch-friend` | yes | Runs the friend-profile switch |
 | `~/.local/bin/buddy-switch-work` | yes | Runs the work-profile switch |
+| `~/.local/bin/buddy-switch-routes` | yes | Shows the current route and available choices |
 | `~/.local/bin/buddy-switch-init` | yes | Generates local settings and SOUL drafts |
 | `~/.local/bin/nothink_proxy.py` | yes, optional | OpenAI-compatible Ollama proxy with `think:false` |
 | `~/.config/buddy-switch/config.env` | yes | Local Buddy Switch settings |
@@ -121,12 +123,21 @@ Add this block to both Hermes profile configs:
 
 ```yaml
 quick_commands:
+  friends:
+    type: exec
+    command: "$HOME/.local/bin/buddy-switch-routes"
+    category: catalog
+    label: "Choose a friend"
   friend:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-friend"
+    category: route
+    label: "Friend"
   work:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-work"
+    category: route
+    label: "Work"
 ```
 
 Then restart the active Hermes gateway so it reloads the config.
@@ -143,11 +154,25 @@ If your profiles are named differently, use those directories instead.
 ## Telegram Usage
 
 ```text
+/friends
 /friend
 /work
 ```
 
+`/friends` shows the current profile, model hint, personality path, and exact
+route commands. The Buddy Switch Hermes fork turns that screen into buttons.
 After switching, wait 10-20 seconds and send the next message.
+
+## Terminal Usage
+
+```bash
+buddy-switch-routes
+buddy-switch-friend
+buddy-switch-work
+```
+
+The first command is read-only. It is the easiest way to rediscover route names
+without opening config files.
 
 ## Install From a Clone
 
@@ -184,6 +209,7 @@ Existing `config.env` is kept unchanged.
 ```bash
 rm -f ~/.local/bin/buddy-switch-friend
 rm -f ~/.local/bin/buddy-switch-work
+rm -f ~/.local/bin/buddy-switch-routes
 rm -f ~/.local/bin/buddy-switch-init
 rm -f ~/.local/bin/nothink_proxy.py
 rm -rf ~/.config/buddy-switch

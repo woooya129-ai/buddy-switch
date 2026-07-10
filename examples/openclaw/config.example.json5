@@ -1,0 +1,43 @@
+{
+  // Example only. Create each bot with BotFather and keep its token outside git.
+  channels: {
+    telegram: {
+      accounts: {
+        friend: {
+          name: "@FRIEND_BOT_USERNAME",
+          botToken: "${TELEGRAM_FRIEND_BOT_TOKEN}",
+          dmPolicy: "allowlist",
+          allowFrom: ["__TELEGRAM_USER_ID__"],
+        },
+        work: {
+          name: "@WORK_BOT_USERNAME",
+          botToken: "${TELEGRAM_WORK_BOT_TOKEN}",
+          dmPolicy: "allowlist",
+          allowFrom: ["__TELEGRAM_USER_ID__"],
+        },
+      },
+    },
+  },
+  agents: {
+    list: [
+      {
+        id: "friend",
+        name: "Friend",
+        description: "Example warm conversation personality",
+        workspace: "~/.openclaw/workspace-friend",
+        model: "__FRIEND_PROVIDER__/__FRIEND_MODEL__",
+      },
+      {
+        id: "work",
+        name: "Work",
+        description: "Example tool-oriented work personality",
+        workspace: "~/.openclaw/workspace-work",
+        model: "__WORK_PROVIDER__/__WORK_MODEL__",
+      },
+    ],
+  },
+  bindings: [
+    { agentId: "friend", match: { channel: "telegram", accountId: "friend" } },
+    { agentId: "work", match: { channel: "telegram", accountId: "work" } },
+  ],
+}

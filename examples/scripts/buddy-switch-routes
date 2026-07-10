@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch"
+CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-$CONFIG_DIR/config.env}"
+STATE_DIR="${BUDDY_SWITCH_STATE_DIR:-$HOME/.local/state/buddy-switch}"
+CURRENT_ROUTE_FILE="${BUDDY_SWITCH_CURRENT_ROUTE_FILE:-$STATE_DIR/current-route}"
+
+if [[ -f "$CONFIG_FILE" ]]; then
+  config_perm="$(stat -f '%Lp' "$CONFIG_FILE" 2>/dev/null || stat -c '%a' "$CONFIG_FILE" 2>/dev/null || echo '')"
+  if [[ -n "$config_perm" ]] && [[ "$config_perm" =~ [2367].$ || "$config_perm" =~ [2367]$ ]]; then
+    printf '%s\n' "Refusing to load $CONFIG_FILE: it is group/world-writable. Run: chmod 600 $CONFIG_FILE" >&2
+    exit 1
+  fi
+  # shellcheck disable=SC1090
+  . "$CONFIG_FILE"
+fi
+
+FRIEND_PROFILE="${FRIEND_PROFILE:-buddy-friend}"
+WORK_PROFILE="${WORK_PROFILE:-buddy-work}"
+FRIEND_PERSONA="${FRIEND_PERSONA:-$CONFIG_DIR/personas/$FRIEND_PROFILE/SOUL.md}"
+WORK_PERSONA="${WORK_PERSONA:-$CONFIG_DIR/personas/$WORK_PROFILE/SOUL.md}"
+
+current_route="unknown"
+if [[ -f "$CURRENT_ROUTE_FILE" ]]; then
+  current_route="$(head -c 64 "$CURRENT_ROUTE_FILE" | tr -cd 'A-Za-z0-9._-')"
+  current_route="${current_route:-unknown}"
+fi
+
+case "$current_route" in
+  friend)
+    current_profile="$FRIEND_PROFILE"
+    current_model="${FRIEND_MODEL:-profile default}"
+    current_persona="$FRIEND_PERSONA"
+    ;;
+  work)
+    current_profile="$WORK_PROFILE"
+    current_model="${WORK_MODEL:-profile default}"
+    current_persona="$WORK_PERSONA"
+    ;;
+  *)
+    current_profile="unknown"
+    current_model="unknown"
+    current_persona="unknown"
+    ;;
+esac
+
+cat <<EOF
+Buddy Switch
+
+Current
+  Route:       $current_route
+  Profile:     $current_profile
+  Model:       $current_model
+  Personality: $current_persona
+
+Available routes
+  /friend  -> $FRIEND_PROFILE | ${FRIEND_MODEL:-profile default} | $FRIEND_PERSONA
+  /work    -> $WORK_PROFILE | ${WORK_MODEL:-profile default} | $WORK_PERSONA
+
+Telegram: send /friend or /work. On the Buddy Switch Hermes fork, /friends opens buttons.
+Terminal: run buddy-switch-friend or buddy-switch-work.
+EOF

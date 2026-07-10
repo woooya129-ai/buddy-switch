@@ -15,7 +15,10 @@ the setup.
 - `hermes/work-profile.config.yaml`: minimal work-profile shape.
 - `scripts/buddy-switch-friend`: local fallback script for `/friend`.
 - `scripts/buddy-switch-work`: local fallback script for `/work`.
+- `scripts/buddy-switch-routes`: read-only route and current-state catalog.
 - `scripts/buddy-switch-init`: first-run profile and SOUL draft generator.
+- `openclaw/config.example.json5`: example multi-bot account-to-agent bindings
+  for discoverable real Telegram `@username` routes.
 - `launchd/hermes-gateway-profile.plist.template`: macOS launchd profile
   gateway template.
 - `ollama/nothink_proxy.py`: optional OpenAI-compatible proxy that forwards to
