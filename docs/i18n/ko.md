@@ -20,6 +20,8 @@ hermes profile create buddy-work
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![터미널에서 실행 중인 Buddy Switch 설치기](../../assets/buddy-switch-screenshot.png)
+
 진행 막대가 끝나면 터미널 캐릭터의 눈이 열리고 첫 설정이 시작됩니다. 프로필
 이름과 기본 응답 언어를 고르면 아래 위치에 수정 가능한 SOUL 초안이 생깁니다.
 

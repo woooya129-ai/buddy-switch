@@ -21,6 +21,8 @@ hermes profile create buddy-work
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![Установщик Buddy Switch, запущенный в терминале](../../assets/buddy-switch-screenshot.png)
+
 После завершения индикатора персонаж ASCII в терминале открывает глаза и
 запускается первоначальная настройка. После выбора имён и языка редактируемые
 черновики SOUL появятся здесь:

@@ -20,6 +20,8 @@ hermes profile create buddy-work
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![在终端中运行的 Buddy Switch 安装程序](../../assets/buddy-switch-screenshot.png)
+
 进度条完成后，终端中的 ASCII 角色会睁开眼睛，并启动首次设置。选择配置文件
 名称和默认回复语言后，可编辑的 SOUL 草稿会生成在：
 

@@ -20,6 +20,8 @@ hermes profile create buddy-work
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![टर्मिनल में चल रहा Buddy Switch इंस्टॉलर](../../assets/buddy-switch-screenshot.png)
+
 Progress bar पूरा होने पर terminal का ASCII पात्र आँखें खोलता है और पहली setup
 शुरू होती है। Profile नाम और default response language चुनने के बाद editable SOUL
 drafts यहाँ बनते हैं:

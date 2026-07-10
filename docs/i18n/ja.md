@@ -21,6 +21,8 @@ hermes profile create buddy-work
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![ターミナルで実行中の Buddy Switch インストーラー](../../assets/buddy-switch-screenshot.png)
+
 進行バーが完了すると、ターミナルの ASCII キャラクターが目を開き、初回設定が
 始まります。プロファイル名と返信言語を選ぶと、編集用 SOUL 下書きが次の場所に
 作成されます。

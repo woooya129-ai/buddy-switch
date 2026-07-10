@@ -9,6 +9,8 @@ It does not install Hermes, create profiles for you, or touch live credentials.
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![Buddy Switch installer running in a terminal](../assets/buddy-switch-screenshot.png)
+
 Installed files:
 
 ```text

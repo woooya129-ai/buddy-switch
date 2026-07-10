@@ -21,6 +21,8 @@ Después instala Buddy Switch:
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![Instalador de Buddy Switch ejecutándose en una terminal](../../assets/buddy-switch-screenshot.png)
+
 Al terminar la barra de progreso, el personaje ASCII del terminal abre los ojos
 y comienza la configuración inicial. Tras elegir los nombres y el idioma, se
 crean borradores editables de SOUL en:

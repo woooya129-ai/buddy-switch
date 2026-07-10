@@ -21,6 +21,8 @@ Installez ensuite Buddy Switch :
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![Installateur Buddy Switch en cours d'exécution dans un terminal](../../assets/buddy-switch-screenshot.png)
+
 Quand la barre de progression est terminée, le personnage ASCII du terminal
 ouvre les yeux et l'assistant de première configuration démarre. Après le choix
 des noms et de la langue, des brouillons SOUL modifiables sont créés dans :

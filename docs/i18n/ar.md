@@ -20,6 +20,8 @@ hermes profile create buddy-work
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![مثبّت Buddy Switch يعمل في الطرفية](../../assets/buddy-switch-screenshot.png)
+
 عند اكتمال شريط التقدم تفتح شخصية ASCII عينيها في الطرفية، ثم يبدأ إعداد الاستخدام
 الأول. بعد اختيار أسماء الملفات واللغة، تُنشأ مسودات SOUL قابلة للتعديل في:
 

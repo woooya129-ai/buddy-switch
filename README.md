@@ -59,6 +59,8 @@ Fastest path:
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![Buddy Switch installer running in a terminal](assets/buddy-switch-screenshot.png)
+
 This installs:
 
 - `~/.local/bin/buddy-switch-friend`

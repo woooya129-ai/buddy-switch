@@ -21,6 +21,8 @@ Installiere danach Buddy Switch:
 curl -fsSL https://raw.githubusercontent.com/woooya129-ai/buddy-switch/main/install.sh | bash
 ```
 
+![Buddy-Switch-Installer im Terminal](../../assets/buddy-switch-screenshot.png)
+
 Nach dem Fortschrittsbalken öffnet die ASCII-Figur im Terminal die Augen und
 die Ersteinrichtung beginnt. Nach Auswahl der Profilnamen und Sprache entstehen
 bearbeitbare SOUL-Entwürfe unter:
