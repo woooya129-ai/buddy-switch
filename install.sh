@@ -8,7 +8,12 @@ CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-$CONFIG_DIR/config.env}"
 INSTALL_NOTHINK_PROXY="${INSTALL_NOTHINK_PROXY:-1}"
 RUN_FIRST_SETUP="${BUDDY_SWITCH_RUN_SETUP:-1}"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd || pwd)"
+SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
+if [[ -n "$SCRIPT_SOURCE" && -f "$SCRIPT_SOURCE" ]]; then
+  SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" >/dev/null 2>&1 && pwd)"
+else
+  SCRIPT_DIR="$(pwd)"
+fi
 
 show_progress() {
   local current="$1"
