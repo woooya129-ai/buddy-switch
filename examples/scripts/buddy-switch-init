@@ -25,21 +25,39 @@ fi
 FRIEND_PROFILE_ARG="${FRIEND_PROFILE_OVERRIDE:-${FRIEND_PROFILE:-}}"
 WORK_PROFILE_ARG="${WORK_PROFILE_OVERRIDE:-${WORK_PROFILE:-}}"
 
+ALIASES_FILE="${BUDDY_SWITCH_ALIASES_FILE:-$CONFIG_DIR/aliases.list}"
+ALIASES_YAML="${BUDDY_SWITCH_ALIASES_YAML:-$CONFIG_DIR/quick-commands.aliases.yaml}"
+
 usage() {
   cat <<'EOF'
 Usage: buddy-switch-init [options]
+       buddy-switch-init aliases [--add NAME=MODEL[=LABEL]] [--remove NAME]
 
 Create safe starter SOUL drafts without overwriting Hermes files.
+
+The "aliases" mode manages same-chat @name_model aliases. It can be rerun at
+any time to add, remove, or regenerate aliases; it never edits live Hermes
+configs, it only regenerates a ready-to-paste quick_commands block.
 
 Options:
   --friend-profile NAME  Friend profile name
   --work-profile NAME    Work profile name
   --language CODE        en, zh, hi, es, fr, ar, pt, ru, ja, ko, or de
+  --add NAME=MODEL[=LABEL]  (aliases mode) add or replace one alias
+  --remove NAME             (aliases mode) remove one alias
   --yes                  Use defaults for unanswered questions
   --first-run            Use the short first-install introduction
   -h, --help             Show this help
 EOF
 }
+
+MODE="setup"
+if [[ "${1:-}" == "aliases" ]]; then
+  MODE="aliases"
+  shift
+fi
+ALIAS_ADDS=()
+ALIAS_REMOVES=()
 
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
@@ -53,6 +71,14 @@ while [[ "$#" -gt 0 ]]; do
       ;;
     --language)
       LANGUAGE_CODE="${2:-}"
+      shift 2
+      ;;
+    --add)
+      ALIAS_ADDS+=("${2:-}")
+      shift 2
+      ;;
+    --remove)
+      ALIAS_REMOVES+=("${2:-}")
       shift 2
       ;;
     --yes)
@@ -313,6 +339,293 @@ EOF
   printf 'Created SOUL draft: %s\n' "$target"
 }
 
+# --- Same-chat @name_model alias management -------------------------------
+# Aliases live in a small editable list file; the YAML block is regenerated
+# from it, so this mode is safe to rerun at any time.
+
+is_alias_name() {
+  [[ "$1" =~ ^[A-Za-z0-9_]{2,32}$ ]] || return 1
+  case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
+    *bot) return 1 ;;
+    friend|friends|work|model|profile|help|new|reset) return 1 ;;
+  esac
+  return 0
+}
+
+is_model_id() {
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$ ]]
+}
+
+is_alias_label() {
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9\ ._:/+-]{0,47}$ ]]
+}
+
+ALIAS_NAMES=()
+ALIAS_MODELS=()
+ALIAS_LABELS=()
+
+load_aliases() {
+  ALIAS_NAMES=()
+  ALIAS_MODELS=()
+  ALIAS_LABELS=()
+  [[ -f "$ALIASES_FILE" ]] || return 0
+  local name model label
+  while IFS=$'\t' read -r name model label; do
+    [[ -n "$name" && -n "$model" ]] || continue
+    is_alias_name "$name" || continue
+    is_model_id "$model" || continue
+    if [[ -z "$label" ]] || ! is_alias_label "$label"; then
+      label="$name"
+    fi
+    ALIAS_NAMES+=("$name")
+    ALIAS_MODELS+=("$model")
+    ALIAS_LABELS+=("$label")
+  done <"$ALIASES_FILE"
+}
+
+remove_alias() {
+  local target="$1"
+  local kept_names=()
+  local kept_models=()
+  local kept_labels=()
+  local found=0
+  local i
+  if [[ ${#ALIAS_NAMES[@]} -gt 0 ]]; then
+    for i in "${!ALIAS_NAMES[@]}"; do
+      if [[ "${ALIAS_NAMES[$i]}" == "$target" ]]; then
+        found=1
+        continue
+      fi
+      kept_names+=("${ALIAS_NAMES[$i]}")
+      kept_models+=("${ALIAS_MODELS[$i]}")
+      kept_labels+=("${ALIAS_LABELS[$i]}")
+    done
+  fi
+  ALIAS_NAMES=()
+  ALIAS_MODELS=()
+  ALIAS_LABELS=()
+  if [[ ${#kept_names[@]} -gt 0 ]]; then
+    ALIAS_NAMES=("${kept_names[@]}")
+    ALIAS_MODELS=("${kept_models[@]}")
+    ALIAS_LABELS=("${kept_labels[@]}")
+  fi
+  if [[ "$found" == "1" ]]; then
+    printf 'Removed alias: %s\n' "$target"
+  else
+    printf 'No such alias: %s\n' "$target"
+  fi
+}
+
+add_alias() {
+  local name="$1"
+  local model="$2"
+  local label="$3"
+  if ! is_alias_name "$name"; then
+    printf 'Invalid alias name: %s\n' "$name" >&2
+    printf '%s\n' 'Use 2-32 letters/digits/underscores; it must not end in "bot" or shadow a built-in command.' >&2
+    return 1
+  fi
+  if ! is_model_id "$model"; then
+    printf 'Invalid model ID: %s\n' "$model" >&2
+    printf '%s\n' 'Copy an exact ID, for example ollama/gemma4:e4b.' >&2
+    return 1
+  fi
+  if [[ -z "$label" ]]; then
+    label="$name"
+  fi
+  if ! is_alias_label "$label"; then
+    printf 'Invalid label: %s\n' "$label" >&2
+    return 1
+  fi
+  remove_alias "$name" >/dev/null
+  ALIAS_NAMES+=("$name")
+  ALIAS_MODELS+=("$model")
+  ALIAS_LABELS+=("$label")
+  printf 'Set alias: @%s -> %s (%s)\n' "$name" "$model" "$label"
+}
+
+save_aliases() {
+  local temp_file
+  temp_file="$(mktemp "${ALIASES_FILE}.XXXXXX")"
+  local i
+  if [[ ${#ALIAS_NAMES[@]} -gt 0 ]]; then
+    for i in "${!ALIAS_NAMES[@]}"; do
+      printf '%s\t%s\t%s\n' "${ALIAS_NAMES[$i]}" "${ALIAS_MODELS[$i]}" "${ALIAS_LABELS[$i]}" >>"$temp_file"
+    done
+  fi
+  mv "$temp_file" "$ALIASES_FILE"
+  chmod 600 "$ALIASES_FILE"
+}
+
+write_alias_yaml() {
+  if [[ -f "$ALIASES_YAML" ]]; then
+    cp "$ALIASES_YAML" "${ALIASES_YAML}.bak"
+  fi
+  local temp_file
+  temp_file="$(mktemp "${ALIASES_YAML}.XXXXXX")"
+  {
+    printf '%s\n' '# GENERATED by "buddy-switch-init aliases". Rerun that command to edit;'
+    printf '%s\n' '# manual changes here are overwritten (previous version kept as .bak).'
+    printf '%s\n' '# Merge this block into the quick_commands section of BOTH Hermes'
+    printf '%s\n' '# profile config.yaml files, then restart the gateway. Sending a'
+    printf '%s\n' '# message that is exactly "@<alias>" switches the CURRENT chat only.'
+    if [[ ${#ALIAS_NAMES[@]} -eq 0 ]]; then
+      printf '%s\n' 'quick_commands: {}'
+    else
+      printf '%s\n' 'quick_commands:'
+      local i
+      for i in "${!ALIAS_NAMES[@]}"; do
+        printf '  %s:\n' "${ALIAS_NAMES[$i]}"
+        printf '    type: alias\n'
+        printf '    category: route\n'
+        printf '    label: "%s"\n' "${ALIAS_LABELS[$i]}"
+        printf '    description: "Switch this chat to %s"\n' "${ALIAS_LABELS[$i]}"
+        printf '    target: "model %s --session"\n' "${ALIAS_MODELS[$i]}"
+      done
+    fi
+  } >"$temp_file"
+  mv "$temp_file" "$ALIASES_YAML"
+  chmod 600 "$ALIASES_YAML"
+}
+
+print_alias_list() {
+  local dest="${1:-/dev/stdout}"
+  if [[ ${#ALIAS_NAMES[@]} -eq 0 ]]; then
+    printf '%s\n' '  (no aliases defined yet)' >"$dest"
+    return
+  fi
+  local i
+  for i in "${!ALIAS_NAMES[@]}"; do
+    printf '  @%s -> %s (%s)\n' "${ALIAS_NAMES[$i]}" "${ALIAS_MODELS[$i]}" "${ALIAS_LABELS[$i]}" >"$dest"
+  done
+}
+
+print_alias_summary() {
+  cat <<EOF
+
+Aliases saved.
+
+  $ALIASES_FILE
+  $ALIASES_YAML
+
+Current aliases:
+EOF
+  print_alias_list
+  cat <<'EOF'
+
+Next: merge the generated quick_commands block into BOTH profile configs
+(~/.hermes/profiles/<name>/config.yaml), restart the gateway, then send
+"@<alias>" in Telegram and confirm the new model with /friends.
+Rerun "buddy-switch-init aliases" anytime to add, remove, or regenerate.
+EOF
+}
+
+prompt_alias_field() {
+  local prompt="$1"
+  local validator="$2"
+  local default_value="$3"
+  local allow_empty="$4"
+  local answer=''
+  while true; do
+    if [[ -n "$default_value" ]]; then
+      printf '%s [%s]: ' "$prompt" "$default_value" >/dev/tty
+    else
+      printf '%s: ' "$prompt" >/dev/tty
+    fi
+    IFS= read -r answer </dev/tty || answer=''
+    answer="${answer:-$default_value}"
+    if [[ -z "$answer" && "$allow_empty" == "1" ]]; then
+      printf '%s' ''
+      return
+    fi
+    if [[ -n "$answer" ]] && "$validator" "$answer"; then
+      printf '%s' "$answer"
+      return
+    fi
+    printf '%s\n' 'Invalid value, try again.' >/dev/tty
+  done
+}
+
+alias_editor_interactive() {
+  load_aliases
+  local answer name model label
+  while true; do
+    printf '\n%s\n' 'Same-chat @name_model aliases for this chat-switching setup:' >/dev/tty
+    print_alias_list /dev/tty
+    printf '\n%s' '[a]dd, [r]emove, [s]ave and write YAML, [q]uit without saving: ' >/dev/tty
+    IFS= read -r answer </dev/tty || answer='q'
+    case "$answer" in
+      a|A)
+        name="$(prompt_alias_field 'Alias name (typed as @name in chat)' is_alias_name '' 0)"
+        model="$(prompt_alias_field 'Exact model ID (e.g. ollama/gemma4:e4b)' is_model_id '' 0)"
+        label="$(prompt_alias_field 'Label' is_alias_label "$name" 0)"
+        add_alias "$name" "$model" "$label" >/dev/tty || true
+        ;;
+      r|R)
+        name="$(prompt_alias_field 'Alias name to remove' is_alias_name '' 0)"
+        remove_alias "$name" >/dev/tty
+        ;;
+      s|S)
+        save_aliases
+        write_alias_yaml
+        print_alias_summary
+        return
+        ;;
+      q|Q)
+        printf '%s\n' 'Left aliases unchanged.' >/dev/tty
+        return
+        ;;
+      *)
+        printf '%s\n' 'Choose a, r, s, or q.' >/dev/tty
+        ;;
+    esac
+  done
+}
+
+aliases_main() {
+  mkdir -p "$CONFIG_DIR"
+  chmod 700 "$CONFIG_DIR"
+  load_aliases
+
+  local changed=0 spec name model rest label
+  if [[ ${#ALIAS_REMOVES[@]} -gt 0 ]]; then
+    for name in "${ALIAS_REMOVES[@]}"; do
+      remove_alias "$name"
+      changed=1
+    done
+  fi
+  if [[ ${#ALIAS_ADDS[@]} -gt 0 ]]; then
+    for spec in "${ALIAS_ADDS[@]}"; do
+      name="${spec%%=*}"
+      rest="${spec#*=}"
+      if [[ "$rest" == "$spec" || -z "$name" || -z "$rest" ]]; then
+        printf 'Invalid --add value: %s (expected NAME=MODEL[=LABEL])\n' "$spec" >&2
+        exit 2
+      fi
+      model="${rest%%=*}"
+      label="${rest#*=}"
+      if [[ "$label" == "$rest" ]]; then
+        label=""
+      fi
+      add_alias "$name" "$model" "$label" || exit 2
+      changed=1
+    done
+  fi
+
+  if [[ "$changed" == "1" || "$ASSUME_YES" == "1" || ! -r /dev/tty ]]; then
+    save_aliases
+    write_alias_yaml
+    print_alias_summary
+    return
+  fi
+  alias_editor_interactive
+}
+
+if [[ "$MODE" == "aliases" ]]; then
+  aliases_main
+  exit 0
+fi
+
 mkdir -p "$CONFIG_DIR" "$PERSONA_DIR"
 chmod 700 "$CONFIG_DIR" "$PERSONA_DIR"
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -368,6 +681,14 @@ write_soul_draft \
   'Be a focused work assistant for files, research, tools, and technical tasks.' \
   'Lead with outcomes, stay concise, and make actions easy to verify.'
 
+if [[ "$ASSUME_YES" != "1" && -r /dev/tty ]]; then
+  printf '\n%s' 'Set up same-chat @name_model aliases now? You can edit them anytime with "buddy-switch-init aliases". [y/N]: ' >/dev/tty
+  IFS= read -r alias_answer </dev/tty || alias_answer=''
+  case "$alias_answer" in
+    y|Y|yes|YES) alias_editor_interactive ;;
+  esac
+fi
+
 cat <<EOF
 
 Setup complete.
@@ -381,4 +702,7 @@ SOUL drafts:
 
 Review each draft, then copy it into the matching Hermes profile directory.
 Buddy Switch never overwrites an existing Hermes SOUL.md.
+
+Same-chat model aliases (@name_model) can be added, removed, or regenerated
+at any time with: buddy-switch-init aliases
 EOF

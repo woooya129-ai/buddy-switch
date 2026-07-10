@@ -177,7 +177,23 @@ quick_commands:
 선택 사항으로, 같은 대화방 모델 별칭도 추가할 수 있습니다(Buddy Switch Hermes
 포크). `@이름_모델` 형태의 메시지를 그대로 보내면 **현재 대화방**의 라우터가
 해당 이름+모델 조합으로 지속 전환됩니다. 대화방은 바뀌지 않고, 별도 봇
-대화방도 열리지 않습니다. `--session`을 붙여 이 대화방만 바뀌게 합니다:
+대화방도 열리지 않습니다.
+
+별칭 YAML은 직접 쓰지 않아도 됩니다. 처음 설정 때만이 아니라 **언제든** 아래
+명령으로 추가·삭제·재생성할 수 있습니다:
+
+```bash
+# 대화형 편집기 (추가/삭제/저장):
+buddy-switch-init aliases
+
+# 스크립트형 반복 편집:
+buddy-switch-init aliases --add mika_gemma=ollama/gemma4:e4b="미카 + Gemma"
+buddy-switch-init aliases --remove old_alias
+```
+
+결과는 `~/.config/buddy-switch/quick-commands.aliases.yaml`에 붙여넣기용
+블록으로 생성되며(이전 버전은 `.bak`으로 보관), 라이브 Hermes 설정은 절대
+직접 수정하지 않습니다. `--session`을 붙여 이 대화방만 바뀌게 합니다:
 
 ```yaml
 quick_commands:

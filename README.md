@@ -112,6 +112,8 @@ Hermes, OpenClaw, models, bot tokens, or credentials.
 | `~/.local/bin/nothink_proxy.py` | Optional Ollama `think:false` proxy |
 | `~/.config/buddy-switch/config.env` | The one file you usually edit |
 | `~/.config/buddy-switch/personas/` | Generated SOUL drafts to review |
+| `~/.config/buddy-switch/aliases.list` | Your `@name_model` alias definitions (edit via `buddy-switch-init aliases`) |
+| `~/.config/buddy-switch/quick-commands.aliases.yaml` | Generated block to merge into profile configs |
 | `~/.local/state/buddy-switch/` | Logs created after the first switch |
 | `~/.hermes/profiles/<profile>/config.yaml` | Hermes config you edit manually |
 
@@ -355,6 +357,13 @@ quick_commands:
     label: "Mika + Gemma"
     target: "model ollama/gemma4:e4b --session"
 ```
+
+You do not have to write that YAML by hand. `buddy-switch-init aliases`
+manages the aliases interactively or via `--add name=model[=label]` /
+`--remove name`, and regenerates
+`~/.config/buddy-switch/quick-commands.aliases.yaml` for you. It can be rerun
+at any time — first-run setup also offers it, but aliases are never
+first-run-only.
 
 After sending `@mika_gemma`, run `/friends` again: it must show the new model
 for this chat. Handles that end in `bot`, appear inside a longer message, or

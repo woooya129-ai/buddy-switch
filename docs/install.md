@@ -230,8 +230,23 @@ quick_commands:
 
 Optional same-chat model aliases (Buddy Switch Hermes fork): a message that is
 exactly `@<route name>` runs the matching `category: route` quick command in
-the **current** chat. Use a session-scoped model switch as the target so only
-this chat changes, then confirm with `/friends`:
+the **current** chat. You do not need to write these by hand — generate and
+edit them at any time with the alias manager:
+
+```bash
+# Interactive editor (add/remove/save):
+buddy-switch-init aliases
+
+# Or scriptable, repeatable edits:
+buddy-switch-init aliases --add mika_gemma=ollama/gemma4:e4b="Mika + Gemma"
+buddy-switch-init aliases --add mika_qwen=ollama/qwen3:8b --remove old_alias
+```
+
+This writes `~/.config/buddy-switch/quick-commands.aliases.yaml`, a
+ready-to-merge block like the one below (the previous version is kept as
+`.bak`). Rerunning the command regenerates it; it never edits live Hermes
+configs. Use a session-scoped model switch as the target so only this chat
+changes, then confirm with `/friends`:
 
 ```yaml
 quick_commands:
