@@ -14,9 +14,16 @@ Installed files:
 ```text
 ~/.local/bin/buddy-switch-friend
 ~/.local/bin/buddy-switch-work
+~/.local/bin/buddy-switch-init
 ~/.local/bin/nothink_proxy.py
 ~/.config/buddy-switch/config.env
+~/.config/buddy-switch/personas/
 ```
+
+During an interactive first install, a progress bar tracks the completed
+steps. When the install finishes, an ASCII face opens its eyes and the setup
+wizard asks for two profile names and a default response language. The wizard
+creates editable SOUL drafts; it does not overwrite Hermes files.
 
 ## Where Everything Goes
 
@@ -24,12 +31,44 @@ Installed files:
 | --- | --- | --- |
 | `~/.local/bin/buddy-switch-friend` | yes | Runs the friend-profile switch |
 | `~/.local/bin/buddy-switch-work` | yes | Runs the work-profile switch |
+| `~/.local/bin/buddy-switch-init` | yes | Generates local settings and SOUL drafts |
 | `~/.local/bin/nothink_proxy.py` | yes, optional | OpenAI-compatible Ollama proxy with `think:false` |
 | `~/.config/buddy-switch/config.env` | yes | Local Buddy Switch settings |
+| `~/.config/buddy-switch/personas/` | on first setup | Editable SOUL drafts |
 | `~/.local/state/buddy-switch/` | on first run | Switch logs |
 | `~/.hermes/profiles/<profile>/config.yaml` | no | Add Hermes quick commands manually |
 
 Buddy Switch does not create Hermes profiles and does not write credentials.
+
+For a non-interactive install, skip the wizard and run it later:
+
+```bash
+BUDDY_SWITCH_RUN_SETUP=0 ./install.sh
+buddy-switch-init
+```
+
+For scripts or CI:
+
+```bash
+buddy-switch-init --yes \
+  --friend-profile buddy-friend \
+  --work-profile buddy-work \
+  --language en
+```
+
+## Create Hermes Profiles
+
+Current Hermes versions provide a profile command. A representative setup is:
+
+```bash
+hermes profile create buddy-friend --no-skills
+hermes profile create buddy-work
+```
+
+`--no-skills` is only an example for a lightweight chat profile. Choose the
+tools and model that fit your own use. Buddy Switch does not install Hermes;
+use the [official Hermes installer](https://github.com/NousResearch/hermes-agent#quick-install)
+first if needed.
 
 ## Configure Profiles
 
@@ -62,6 +101,19 @@ The installer creates `config.env` with `600` permissions and the config
 directory with `700`. Keep it that way: the switch scripts source this file as
 shell and will refuse to load it if it is group/world-writable. See
 [`../SECURITY.md`](../SECURITY.md) for the full runtime security model.
+
+## Review the SOUL Drafts
+
+The setup wizard writes two drafts under:
+
+```text
+~/.config/buddy-switch/personas/<profile-name>/SOUL.md
+```
+
+Read and edit them before copying their contents into the matching Hermes
+profile. If a Hermes `SOUL.md` already exists, back it up and merge carefully.
+The response language is controlled by the SOUL language policy plus the
+language ability of the selected model, not by the routing command.
 
 ## Add Hermes Quick Commands
 
@@ -132,6 +184,7 @@ Existing `config.env` is kept unchanged.
 ```bash
 rm -f ~/.local/bin/buddy-switch-friend
 rm -f ~/.local/bin/buddy-switch-work
+rm -f ~/.local/bin/buddy-switch-init
 rm -f ~/.local/bin/nothink_proxy.py
 rm -rf ~/.config/buddy-switch
 ```

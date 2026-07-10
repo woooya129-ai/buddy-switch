@@ -1,0 +1,379 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch"
+CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-$CONFIG_DIR/config.env}"
+PERSONA_DIR="${BUDDY_SWITCH_PERSONA_DIR:-$CONFIG_DIR/personas}"
+
+umask 077
+
+FRIEND_PROFILE_OVERRIDE="${FRIEND_PROFILE:-}"
+WORK_PROFILE_OVERRIDE="${WORK_PROFILE:-}"
+LANGUAGE_CODE="${BUDDY_SWITCH_LANGUAGE:-}"
+FIRST_RUN=0
+ASSUME_YES=0
+
+if [[ -f "$CONFIG_FILE" ]]; then
+  config_perm="$(stat -f '%Lp' "$CONFIG_FILE" 2>/dev/null || stat -c '%a' "$CONFIG_FILE" 2>/dev/null || echo '')"
+  if [[ -n "$config_perm" ]] && [[ "$config_perm" =~ [2367].$ || "$config_perm" =~ [2367]$ ]]; then
+    printf '%s\n' "Refusing to load $CONFIG_FILE: it is group/world-writable. Run: chmod 600 $CONFIG_FILE" >&2
+    exit 1
+  fi
+  # shellcheck disable=SC1090
+  . "$CONFIG_FILE"
+fi
+FRIEND_PROFILE_ARG="${FRIEND_PROFILE_OVERRIDE:-${FRIEND_PROFILE:-}}"
+WORK_PROFILE_ARG="${WORK_PROFILE_OVERRIDE:-${WORK_PROFILE:-}}"
+
+usage() {
+  cat <<'EOF'
+Usage: buddy-switch-init [options]
+
+Create safe starter SOUL drafts without overwriting Hermes files.
+
+Options:
+  --friend-profile NAME  Friend profile name
+  --work-profile NAME    Work profile name
+  --language CODE        en, zh, hi, es, fr, ar, pt, ru, ja, ko, or de
+  --yes                  Use defaults for unanswered questions
+  --first-run            Use the short first-install introduction
+  -h, --help             Show this help
+EOF
+}
+
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --friend-profile)
+      FRIEND_PROFILE_ARG="${2:-}"
+      shift 2
+      ;;
+    --work-profile)
+      WORK_PROFILE_ARG="${2:-}"
+      shift 2
+      ;;
+    --language)
+      LANGUAGE_CODE="${2:-}"
+      shift 2
+      ;;
+    --yes)
+      ASSUME_YES=1
+      shift
+      ;;
+    --first-run)
+      FIRST_RUN=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      printf 'Unknown option: %s\n\n' "$1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+is_profile_name() {
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]
+}
+
+prompt_profile() {
+  local prompt="$1"
+  local default_value="$2"
+  local answer=''
+
+  if [[ "$ASSUME_YES" == "1" || ! -r /dev/tty ]]; then
+    printf '%s' "$default_value"
+    return
+  fi
+
+  while true; do
+    printf '%s [%s]: ' "$prompt" "$default_value" >/dev/tty
+    IFS= read -r answer </dev/tty || answer=''
+    answer="${answer:-$default_value}"
+    if is_profile_name "$answer"; then
+      printf '%s' "$answer"
+      return
+    fi
+    printf '%s\n' 'Use letters, numbers, dots, underscores, or hyphens.' >/dev/tty
+  done
+}
+
+choose_language() {
+  local answer=''
+
+  if [[ -n "$LANGUAGE_CODE" ]]; then
+    printf '%s' "$LANGUAGE_CODE"
+    return
+  fi
+  if [[ "$ASSUME_YES" == "1" || ! -r /dev/tty ]]; then
+    printf '%s' 'en'
+    return
+  fi
+
+  cat >/dev/tty <<'EOF'
+
+Choose the default response language:
+  1. English       2. Chinese      3. Hindi
+  4. Spanish       5. French       6. Arabic
+  7. Portuguese    8. Russian      9. Japanese
+ 10. Korean       11. German
+EOF
+  while true; do
+    printf '%s' 'Language [1]: ' >/dev/tty
+    IFS= read -r answer </dev/tty || answer=''
+    case "${answer:-1}" in
+      1|en) printf '%s' 'en'; return ;;
+      2|zh) printf '%s' 'zh'; return ;;
+      3|hi) printf '%s' 'hi'; return ;;
+      4|es) printf '%s' 'es'; return ;;
+      5|fr) printf '%s' 'fr'; return ;;
+      6|ar) printf '%s' 'ar'; return ;;
+      7|pt) printf '%s' 'pt'; return ;;
+      8|ru) printf '%s' 'ru'; return ;;
+      9|ja) printf '%s' 'ja'; return ;;
+      10|ko) printf '%s' 'ko'; return ;;
+      11|de) printf '%s' 'de'; return ;;
+      *) printf '%s\n' 'Choose 1-11 or enter a listed language code.' >/dev/tty ;;
+    esac
+  done
+}
+
+language_name() {
+  case "$1" in
+    en) printf '%s' 'English' ;;
+    zh) printf '%s' 'Chinese' ;;
+    hi) printf '%s' 'Hindi' ;;
+    es) printf '%s' 'Spanish' ;;
+    fr) printf '%s' 'French' ;;
+    ar) printf '%s' 'Arabic' ;;
+    pt) printf '%s' 'Portuguese' ;;
+    ru) printf '%s' 'Russian' ;;
+    ja) printf '%s' 'Japanese' ;;
+    ko) printf '%s' 'Korean' ;;
+    de) printf '%s' 'German' ;;
+    *) return 1 ;;
+  esac
+}
+
+language_policy() {
+  case "$1" in
+    en)
+      cat <<'EOF'
+- Respond in natural, idiomatic English by default.
+- Do not mix in unrelated languages unless the user asks for them.
+- Keep names, commands, code, and quoted text in their original form when useful.
+- Follow the user's latest clear language request.
+EOF
+      ;;
+    zh)
+      cat <<'EOF'
+- 默认使用自然、地道的中文回复。
+- 除非用户明确要求，否则不要混入无关语言。
+- 必要时保留姓名、命令、代码和引文的原文。
+- 如果用户更改语言，以最近一次明确要求为准。
+EOF
+      ;;
+    hi)
+      cat <<'EOF'
+- सामान्य रूप से स्वाभाविक और स्पष्ट हिन्दी में उत्तर दें।
+- उपयोगकर्ता के कहे बिना दूसरी भाषाएँ न मिलाएँ।
+- नाम, command, code और quotation को ज़रूरत पर मूल रूप में रखें।
+- भाषा के बारे में उपयोगकर्ता की सबसे नई स्पष्ट माँग मानें।
+EOF
+      ;;
+    es)
+      cat <<'EOF'
+- Responde de forma natural e idiomática en español por defecto.
+- No mezcles otros idiomas salvo que el usuario lo pida.
+- Conserva nombres, comandos, código y citas en su forma original cuando convenga.
+- Sigue la petición de idioma más reciente y explícita del usuario.
+EOF
+      ;;
+    fr)
+      cat <<'EOF'
+- Réponds par défaut dans un français naturel et idiomatique.
+- Ne mélange pas d'autres langues sauf demande de l'utilisateur.
+- Conserve les noms, commandes, codes et citations dans leur forme d'origine si utile.
+- Suis la demande linguistique explicite la plus récente de l'utilisateur.
+EOF
+      ;;
+    ar)
+      cat <<'EOF'
+- أجب افتراضياً بعربية طبيعية وسليمة.
+- لا تخلط لغات أخرى إلا إذا طلب المستخدم ذلك.
+- احتفظ بالأسماء والأوامر والشفرة والاقتباسات بصيغتها الأصلية عند الحاجة.
+- اتبع أحدث طلب واضح من المستخدم بشأن اللغة.
+EOF
+      ;;
+    pt)
+      cat <<'EOF'
+- Responda por padrão em português natural e idiomático.
+- Não misture outros idiomas sem solicitação do usuário.
+- Preserve nomes, comandos, código e citações no original quando for útil.
+- Siga o pedido de idioma explícito mais recente do usuário.
+EOF
+      ;;
+    ru)
+      cat <<'EOF'
+- По умолчанию отвечай на естественном и грамотном русском языке.
+- Не смешивай другие языки без просьбы пользователя.
+- При необходимости сохраняй имена, команды, код и цитаты в оригинале.
+- Следуй последней явной просьбе пользователя о языке.
+EOF
+      ;;
+    ja)
+      cat <<'EOF'
+- 通常は自然で読みやすい日本語で回答する。
+- ユーザーが求めない限り、無関係な言語を混ぜない。
+- 名前、コマンド、コード、引用は必要に応じて原文を保つ。
+- 言語についてはユーザーの最新の明確な依頼に従う。
+EOF
+      ;;
+    ko)
+      cat <<'EOF'
+- 기본 응답은 자연스럽고 관용적인 한국어로 작성한다.
+- 사용자가 요청하지 않으면 중국어를 비롯한 다른 언어를 섞지 않는다.
+- 코드, 명령어, 고유명사, 인용문은 필요할 때 원문을 유지한다.
+- 사용자가 다른 언어를 명확히 요청하면 가장 최근 요청을 따른다.
+EOF
+      ;;
+    de)
+      cat <<'EOF'
+- Antworte standardmäßig in natürlichem, idiomatischem Deutsch.
+- Mische keine anderen Sprachen ein, außer der Benutzer bittet darum.
+- Behalte Namen, Befehle, Code und Zitate bei Bedarf im Original.
+- Folge dem letzten eindeutigen Sprachwunsch des Benutzers.
+EOF
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+set_config_value() {
+  local key="$1"
+  local value="$2"
+  local temp_file
+  temp_file="$(mktemp "${CONFIG_FILE}.XXXXXX")"
+
+  awk -v key="$key" -v value="$value" '
+    BEGIN { replaced = 0 }
+    $0 ~ ("^" key "=") {
+      print key "=\"" value "\""
+      replaced = 1
+      next
+    }
+    { print }
+    END {
+      if (!replaced) print key "=\"" value "\""
+    }
+  ' "$CONFIG_FILE" >"$temp_file"
+  mv "$temp_file" "$CONFIG_FILE"
+}
+
+write_soul_draft() {
+  local target="$1"
+  local mode="$2"
+  local role="$3"
+  local style="$4"
+
+  if [[ -e "$target" ]]; then
+    printf 'Kept existing draft: %s\n' "$target"
+    return
+  fi
+
+  mkdir -p "$(dirname "$target")"
+  cat >"$target" <<EOF
+# SOUL Starter Draft: $mode
+
+This is a starter draft generated by Buddy Switch. Edit it until it sounds
+like the assistant you want. It is an example, not a finished personality.
+
+## Role
+
+$role
+
+## Interaction Style
+
+- $style
+- Be honest about uncertainty and do not invent completed actions.
+- Preserve the user's intent, privacy, and control over their data.
+
+## Language Policy
+
+$LANGUAGE_POLICY
+
+## Boundaries
+
+- Never expose tokens, chat IDs, user IDs, private logs, or local state files.
+- Ask before destructive or externally visible actions.
+EOF
+  printf 'Created SOUL draft: %s\n' "$target"
+}
+
+mkdir -p "$CONFIG_DIR" "$PERSONA_DIR"
+chmod 700 "$CONFIG_DIR" "$PERSONA_DIR"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  cat >"$CONFIG_FILE" <<'EOF'
+# Buddy Switch local config.
+FRIEND_PROFILE="buddy-friend"
+WORK_PROFILE="buddy-work"
+HERMES_BIN="hermes"
+OLLAMA_BIN="ollama"
+FRIEND_MODEL=""
+WORK_MODEL=""
+BUDDY_SWITCH_START_OLLAMA_APP="0"
+BUDDY_NOTHINK_PROXY_PORT="11435"
+BUDDY_NOTHINK_PROXY_BIN="$HOME/.local/bin/nothink_proxy.py"
+EOF
+  chmod 600 "$CONFIG_FILE"
+fi
+
+if [[ "$FIRST_RUN" == "1" ]]; then
+  printf '%s\n' 'Let us create two editable SOUL drafts. No Hermes file will be overwritten.'
+fi
+
+FRIEND_PROFILE_ARG="$(prompt_profile 'Friend profile name' "${FRIEND_PROFILE_ARG:-buddy-friend}")"
+WORK_PROFILE_ARG="$(prompt_profile 'Work profile name' "${WORK_PROFILE_ARG:-buddy-work}")"
+if [[ "$FRIEND_PROFILE_ARG" == "$WORK_PROFILE_ARG" ]]; then
+  printf '%s\n' 'Friend and work profile names must be different.' >&2
+  exit 2
+fi
+LANGUAGE_CODE="$(choose_language)"
+if ! language_name "$LANGUAGE_CODE" >/dev/null; then
+  printf 'Unsupported language code: %s\n' "$LANGUAGE_CODE" >&2
+  exit 2
+fi
+LANGUAGE_POLICY="$(language_policy "$LANGUAGE_CODE")"
+
+set_config_value FRIEND_PROFILE "$FRIEND_PROFILE_ARG"
+set_config_value WORK_PROFILE "$WORK_PROFILE_ARG"
+
+printf '\n%s\n' 'Generating editable persona drafts...'
+write_soul_draft \
+  "$PERSONA_DIR/$FRIEND_PROFILE_ARG/SOUL.md" \
+  'Friend Profile' \
+  'Be a friendly conversation partner for relaxed, everyday dialogue.' \
+  'Use a warm, natural voice without pretending to be a human.'
+write_soul_draft \
+  "$PERSONA_DIR/$WORK_PROFILE_ARG/SOUL.md" \
+  'Work Profile' \
+  'Be a focused work assistant for files, research, tools, and technical tasks.' \
+  'Lead with outcomes, stay concise, and make actions easy to verify.'
+
+cat <<EOF
+
+Setup complete.
+
+Config:
+  $CONFIG_FILE
+
+SOUL drafts:
+  $PERSONA_DIR/$FRIEND_PROFILE_ARG/SOUL.md
+  $PERSONA_DIR/$WORK_PROFILE_ARG/SOUL.md
+
+Review each draft, then copy it into the matching Hermes profile directory.
+Buddy Switch never overwrites an existing Hermes SOUL.md.
+EOF

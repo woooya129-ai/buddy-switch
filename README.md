@@ -19,7 +19,20 @@ This repo is deliberately curated. It is not a copy of a live Hermes home, and
 it does not include secrets, state databases, logs, process snapshots, or full
 private persona files.
 
-Korean guide: [`docs/ko.md`](docs/ko.md)
+Languages (English is canonical):
+[中文](docs/i18n/zh.md) ·
+[हिन्दी](docs/i18n/hi.md) ·
+[Español](docs/i18n/es.md) ·
+[Français](docs/i18n/fr.md) ·
+[العربية](docs/i18n/ar.md) ·
+[Português](docs/i18n/pt.md) ·
+[Русский](docs/i18n/ru.md) ·
+[日本語](docs/i18n/ja.md) ·
+[한국어](docs/i18n/ko.md) ·
+[Deutsch](docs/i18n/de.md)
+
+Translations are ordered roughly by total speaker reach. They may lag behind
+the English README; corrections and additional language PRs are welcome.
 
 ## What Is Included
 
@@ -28,6 +41,9 @@ Korean guide: [`docs/ko.md`](docs/ko.md)
 - `docs/upstream-design.md`: a small upstream-friendly direction for Hermes.
 - `docs/testing.md`: the test matrix and naming guard for implementing the
   upstream design without hard-coding maintainer-specific names.
+- `docs/fork-readiness.md`: the verified Hermes and OpenClaw fork baseline.
+- `docs/personas.md`: how SOUL files, language policy, and model choice fit
+  together.
 - `examples/`: generic config, scripts, launchd template, and an optional
   Ollama no-think proxy.
 - `references/hermes-issues.md`: relevant upstream issues and adjacent
@@ -45,9 +61,16 @@ This installs:
 
 - `~/.local/bin/buddy-switch-friend`
 - `~/.local/bin/buddy-switch-work`
+- `~/.local/bin/buddy-switch-init`
 - `~/.local/bin/nothink_proxy.py`
 - `~/.config/buddy-switch/config.env`
+- starter SOUL drafts under `~/.config/buddy-switch/personas/`
 - later, runtime logs go under `~/.local/state/buddy-switch/`
+
+The installer shows real step progress, then a short ASCII eye-opening scene.
+On a first interactive install it continues into a small setup wizard for
+profile names, response language, and editable SOUL drafts. It never overwrites
+an existing Hermes `SOUL.md`.
 
 ## Where Does It Go?
 
@@ -58,8 +81,10 @@ Hermes, OpenClaw, models, bot tokens, or credentials.
 | --- | --- |
 | `~/.local/bin/buddy-switch-friend` | Command run by `/friend` |
 | `~/.local/bin/buddy-switch-work` | Command run by `/work` |
+| `~/.local/bin/buddy-switch-init` | First-run profile and SOUL draft generator |
 | `~/.local/bin/nothink_proxy.py` | Optional Ollama `think:false` proxy |
 | `~/.config/buddy-switch/config.env` | The one file you usually edit |
+| `~/.config/buddy-switch/personas/` | Generated SOUL drafts to review |
 | `~/.local/state/buddy-switch/` | Logs created after the first switch |
 | `~/.hermes/profiles/<profile>/config.yaml` | Hermes config you edit manually |
 
@@ -81,25 +106,48 @@ See `docs/install.md` for the full setup flow.
 
 ## Quick Start
 
-1. Create two Hermes profiles, for example `buddy-friend` and `buddy-work`.
+1. Install Hermes and create two profiles, for example:
+
+   ```bash
+   hermes profile create buddy-friend --no-skills
+   hermes profile create buddy-work
+   ```
+
 2. Install Buddy Switch with the one-line installer above.
-3. Edit `~/.config/buddy-switch/config.env` if your profile names differ.
-4. Add quick commands like this to both Hermes profile configs:
+3. Follow the first-run prompts, or run `buddy-switch-init` later.
+4. Review the generated SOUL drafts and place the final versions in the
+   matching Hermes profile directories. Back up an existing `SOUL.md` first.
+5. Add quick commands like this to both Hermes profile configs:
 
-```yaml
-quick_commands:
-  friend:
-    type: exec
-    command: "$HOME/.local/bin/buddy-switch-friend"
-  work:
-    type: exec
-    command: "$HOME/.local/bin/buddy-switch-work"
-```
+   ```yaml
+   quick_commands:
+     friend:
+       type: exec
+       command: "$HOME/.local/bin/buddy-switch-friend"
+     work:
+       type: exec
+       command: "$HOME/.local/bin/buddy-switch-work"
+   ```
 
-5. In Telegram, send `/friend` or `/work`, wait for the gateway to switch, then
+6. In Telegram, send `/friend` or `/work`, wait for the gateway to switch, then
    send the next message.
 
 See `examples/hermes/config.example.yaml` for a fuller example.
+
+## Persona and Response Language
+
+The response language belongs in each profile's `SOUL.md`, not in Buddy Switch
+routing config. A reliable language setup combines:
+
+1. a clear SOUL language-policy block
+2. a model that performs well in that language
+3. optional provider sampling adjustments only when testing shows language
+   mixing
+
+Hermes may cache the built system prompt for an agent or session. After editing
+`SOUL.md`, start a new session or restart the relevant gateway if the change is
+not visible. See [`docs/personas.md`](docs/personas.md) for starter templates
+and model-selection notes.
 
 ## Model and Persona Variations
 

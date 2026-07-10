@@ -15,6 +15,7 @@ the setup.
 - `hermes/work-profile.config.yaml`: minimal work-profile shape.
 - `scripts/buddy-switch-friend`: local fallback script for `/friend`.
 - `scripts/buddy-switch-work`: local fallback script for `/work`.
+- `scripts/buddy-switch-init`: first-run profile and SOUL draft generator.
 - `launchd/hermes-gateway-profile.plist.template`: macOS launchd profile
   gateway template.
 - `ollama/nothink_proxy.py`: optional OpenAI-compatible proxy that forwards to

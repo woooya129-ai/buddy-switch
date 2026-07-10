@@ -3,6 +3,27 @@
 Buddy Switch should become a Hermes feature only when the local workaround is
 translated into generic profile routing.
 
+## Current Upstream Baseline
+
+Verified against Hermes `main` on 2026-07-10:
+
+- Hermes already manages isolated profiles with `hermes profile create`,
+  `list`, `use`, and related commands.
+- Messaging `/profile` currently reports the active profile; it does not accept
+  a target profile and route the current chat there.
+- `/personality <name>` can change a configured prompt inside the current
+  profile. It is not a profile switch because model, tools, memory, sessions,
+  credentials, and workspace stay in the same profile.
+- `gateway.multiplex_profiles` now provides an opt-in base for one gateway to
+  host multiple profiles. The remaining Buddy Switch work should build on that
+  substrate instead of creating a second profile loader.
+- The Telegram `channel_profiles`, one-gateway multi-agent, and Discord routing
+  issues are still open.
+
+The first fork experiment should therefore be narrow: resolve a Telegram event
+to a permitted profile in multiplex mode, preserve profile-scoped sessions and
+credentials, and leave the default single-profile path unchanged.
+
 ## Goal
 
 One gateway process should receive platform messages and run each turn under
@@ -178,7 +199,8 @@ keeping the legacy default session key shape for backward compatibility.
 
 ## PR Plan
 
-1. Implement `telegram.channel_profiles` for static chat-to-profile routing.
+1. Implement `telegram.channel_profiles` for static chat-to-profile routing on
+   the existing multiplex gateway path.
 2. Add `/profile ls` and `/profile <name>` for runtime chat binding.
 3. Add `profile_aliases` so `/friend` and `/work` are user-defined aliases.
 4. Add configured `route_presets` or handle routes for example local `@name`

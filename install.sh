@@ -6,8 +6,55 @@ BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch"
 CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-$CONFIG_DIR/config.env}"
 INSTALL_NOTHINK_PROXY="${INSTALL_NOTHINK_PROXY:-1}"
+RUN_FIRST_SETUP="${BUDDY_SWITCH_RUN_SETUP:-1}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd || pwd)"
+
+show_progress() {
+  local current="$1"
+  local total="$2"
+  local label="$3"
+  local width=24
+  local filled=$((current * width / total))
+  local empty=$((width - filled))
+  local left right
+
+  printf -v left '%*s' "$filled" ''
+  printf -v right '%*s' "$empty" ''
+  left="${left// /#}"
+  right="${right// /-}"
+  printf '[%s%s] %3d%%  %s\n' "$left" "$right" "$((current * 100 / total))" "$label"
+}
+
+draw_face() {
+  local eyes="$1"
+  local mouth="$2"
+
+  printf '%s\n' \
+    '          .----------.' \
+    '         /  /\/\/\/\  \' \
+    "        |    $eyes    |" \
+    '        |      .       |' \
+    "         \\    $mouth    /" \
+    "          '----------'"
+}
+
+show_awake_animation() {
+  if [[ "${BUDDY_SWITCH_NO_ANIMATION:-0}" == "1" || ! -t 1 || "${TERM:-}" == "dumb" ]]; then
+    printf '\n%s\n' 'Buddy Switch is awake:  o  o'
+    return
+  fi
+
+  printf '\n'
+  draw_face '-  -' '---'
+  sleep 0.18
+  printf '\033[6A\033[J'
+  draw_face '.  .' '---'
+  sleep 0.18
+  printf '\033[6A\033[J'
+  draw_face 'o  o' '\_/'
+  printf '%s\n\n' 'Buddy Switch is awake.'
+}
 
 install_local_or_remote() {
   local source_path="$1"
@@ -31,12 +78,20 @@ install_local_or_remote() {
 
 mkdir -p "$BIN_DIR" "$CONFIG_DIR"
 chmod 700 "$CONFIG_DIR"
+show_progress 1 6 "Prepared local folders"
 
 install_local_or_remote "examples/scripts/buddy-switch-friend" "buddy-switch-friend"
+show_progress 2 6 "Installed the friend switch"
 install_local_or_remote "examples/scripts/buddy-switch-work" "buddy-switch-work"
+show_progress 3 6 "Installed the work switch"
+install_local_or_remote "examples/scripts/buddy-switch-init" "buddy-switch-init"
+show_progress 4 6 "Installed the first-run setup"
 
 if [[ "$INSTALL_NOTHINK_PROXY" != "0" ]]; then
   install_local_or_remote "examples/ollama/nothink_proxy.py" "nothink_proxy.py"
+  show_progress 5 6 "Installed the optional no-think proxy"
+else
+  show_progress 5 6 "Skipped the optional no-think proxy"
 fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -68,18 +123,34 @@ else
   created_config=0
 fi
 
+show_progress 6 6 "Finished installing Buddy Switch"
+show_awake_animation
+
+setup_ran=0
+if [[ "$created_config" == "1" && "$RUN_FIRST_SETUP" != "0" && -t 1 && -r /dev/tty && -w /dev/tty ]]; then
+  "$BIN_DIR/buddy-switch-init" --first-run </dev/tty >/dev/tty
+  setup_ran=1
+fi
+
+if [[ "$setup_ran" == "1" ]]; then
+  setup_next="Review the generated SOUL drafts under $CONFIG_DIR/personas/."
+else
+  setup_next="Run $BIN_DIR/buddy-switch-init to generate your SOUL drafts."
+fi
+
 cat <<EOF
 Buddy Switch installed.
 
 Commands:
   $BIN_DIR/buddy-switch-friend
   $BIN_DIR/buddy-switch-work
+  $BIN_DIR/buddy-switch-init
 
 Config:
   $CONFIG_FILE
 
 Next:
-  1. Edit the config file if your Hermes profiles are not buddy-friend and buddy-work.
+  1. $setup_next
   2. Add the quick_commands block from the README to both Hermes profile configs.
   3. Send /friend or /work in Telegram.
 EOF
@@ -88,4 +159,3 @@ if [[ "$created_config" == "0" ]]; then
   printf '%s\n' ""
   printf '%s\n' "Existing config was kept unchanged."
 fi
-
