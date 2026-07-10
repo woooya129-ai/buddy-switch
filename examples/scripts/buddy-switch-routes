@@ -5,6 +5,8 @@ CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch"
 CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-$CONFIG_DIR/config.env}"
 STATE_DIR="${BUDDY_SWITCH_STATE_DIR:-$HOME/.local/state/buddy-switch}"
 CURRENT_ROUTE_FILE="${BUDDY_SWITCH_CURRENT_ROUTE_FILE:-$STATE_DIR/current-route}"
+SWITCH_STATUS_FILE="${BUDDY_SWITCH_STATUS_FILE:-$STATE_DIR/switch-status}"
+SWITCH_UPDATED_FILE="${BUDDY_SWITCH_UPDATED_FILE:-$STATE_DIR/switch-updated-at}"
 
 if [[ -f "$CONFIG_FILE" ]]; then
   config_perm="$(stat -f '%Lp' "$CONFIG_FILE" 2>/dev/null || stat -c '%a' "$CONFIG_FILE" 2>/dev/null || echo '')"
@@ -18,48 +20,102 @@ fi
 
 FRIEND_PROFILE="${FRIEND_PROFILE:-buddy-friend}"
 WORK_PROFILE="${WORK_PROFILE:-buddy-work}"
-FRIEND_PERSONA="${FRIEND_PERSONA:-$CONFIG_DIR/personas/$FRIEND_PROFILE/SOUL.md}"
-WORK_PERSONA="${WORK_PERSONA:-$CONFIG_DIR/personas/$WORK_PROFILE/SOUL.md}"
+FRIEND_NAME="${FRIEND_NAME:-Friend}"
+WORK_NAME="${WORK_NAME:-Work}"
+FRIEND_PERSONA_NAME="${FRIEND_PERSONA_NAME:-friend SOUL}"
+WORK_PERSONA_NAME="${WORK_PERSONA_NAME:-work SOUL}"
 
-current_route="unknown"
+clean_token() {
+  printf '%s' "$1" | head -c 128 | tr -cd 'A-Za-z0-9._:/@+-'
+}
+
+confirmed_route="unknown"
 if [[ -f "$CURRENT_ROUTE_FILE" ]]; then
-  current_route="$(head -c 64 "$CURRENT_ROUTE_FILE" | tr -cd 'A-Za-z0-9._-')"
-  current_route="${current_route:-unknown}"
+  confirmed_route="$(clean_token "$(head -n 1 "$CURRENT_ROUTE_FILE")")"
+  confirmed_route="${confirmed_route:-unknown}"
 fi
 
-case "$current_route" in
-  friend)
-    current_profile="$FRIEND_PROFILE"
-    current_model="${FRIEND_MODEL:-profile default}"
-    current_persona="$FRIEND_PERSONA"
+switch_status="unknown"
+switch_target="unknown"
+if [[ -f "$SWITCH_STATUS_FILE" ]]; then
+  read -r raw_status raw_target _ <"$SWITCH_STATUS_FILE" || true
+  switch_status="$(clean_token "${raw_status:-}")"
+  switch_target="$(clean_token "${raw_target:-}")"
+  case "$switch_status" in
+    active|switching|failed) ;;
+    *) switch_status="unknown" ;;
+  esac
+  case "$switch_target" in
+    friend|work) ;;
+    *) switch_target="unknown" ;;
+  esac
+fi
+
+updated_at="unknown"
+if [[ -f "$SWITCH_UPDATED_FILE" ]]; then
+  updated_at="$(clean_token "$(head -n 1 "$SWITCH_UPDATED_FILE")")"
+  updated_at="${updated_at:-unknown}"
+fi
+
+route_values() {
+  case "$1" in
+    friend)
+      current_name="$FRIEND_NAME"
+      current_profile="$FRIEND_PROFILE"
+      current_model="${FRIEND_MODEL:-profile default}"
+      current_persona="$FRIEND_PERSONA_NAME"
+      ;;
+    work)
+      current_name="$WORK_NAME"
+      current_profile="$WORK_PROFILE"
+      current_model="${WORK_MODEL:-profile default}"
+      current_persona="$WORK_PERSONA_NAME"
+      ;;
+    *)
+      current_name="unknown"
+      current_profile="unknown"
+      current_model="unknown"
+      current_persona="unknown"
+      ;;
+  esac
+}
+
+route_values "$confirmed_route"
+
+case "$switch_status" in
+  active)
+    status_line="ACTIVE - confirmed by the gateway start command"
     ;;
-  work)
-    current_profile="$WORK_PROFILE"
-    current_model="${WORK_MODEL:-profile default}"
-    current_persona="$WORK_PERSONA"
+  switching)
+    status_line="SWITCHING to $switch_target - not confirmed yet"
+    ;;
+  failed)
+    status_line="FAILED while switching to $switch_target - last confirmed route shown below"
     ;;
   *)
-    current_profile="unknown"
-    current_model="unknown"
-    current_persona="unknown"
+    status_line="UNKNOWN - run a route once to create verified state"
     ;;
 esac
 
 cat <<EOF
 Buddy Switch
 
-Current
-  Route:       $current_route
+NOW - last confirmed route
+  Name:        $current_name
+  Route:       $confirmed_route
   Profile:     $current_profile
-  Model hint:  $current_model
+  Model:       $current_model
   Personality: $current_persona
 
-Available routes
-  /friend  -> $FRIEND_PROFILE | ${FRIEND_MODEL:-profile default} | $FRIEND_PERSONA
-  /work    -> $WORK_PROFILE | ${WORK_MODEL:-profile default} | $WORK_PERSONA
+Switch status
+  $status_line
+  Updated: $updated_at
 
-Telegram: send /friend or /work. On the Buddy Switch Hermes fork, /friends opens buttons.
-Terminal: run buddy-switch-friend or buddy-switch-work.
-Model source: the target Hermes profile config. FRIEND_MODEL/WORK_MODEL are display and Ollama-unload hints only.
-Find exact local Ollama IDs with: ollama list
+Available routes
+  /friend -> $FRIEND_NAME | $FRIEND_PROFILE | ${FRIEND_MODEL:-profile default} | $FRIEND_PERSONA_NAME
+  /work   -> $WORK_NAME | $WORK_PROFILE | ${WORK_MODEL:-profile default} | $WORK_PERSONA_NAME
+
+Telegram: send /friend or /work, then run /friends again until status is ACTIVE.
+Terminal: run buddy-switch-friend or buddy-switch-work, then buddy-switch-routes.
+The model shown here is the configured Buddy hint; the target Hermes profile remains the model source of truth.
 EOF

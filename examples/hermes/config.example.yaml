@@ -14,12 +14,18 @@ quick_commands:
     category: route
     label: "Friend"
     description: "Switch to the light chat profile"
+    profile: buddy-friend
+    model: "__FRIEND_MODEL_NAME__"
+    personality: "__FRIEND_PERSONA_NAME__"
   work:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-work"
     category: route
     label: "Work"
     description: "Switch to the tool-enabled work profile"
+    profile: buddy-work
+    model: "__WORK_MODEL_NAME__"
+    personality: "__WORK_PERSONA_NAME__"
 
 # Future upstream-friendly shape. These aliases should become config, not
 # hard-coded commands.

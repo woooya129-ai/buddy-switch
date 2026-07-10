@@ -52,17 +52,23 @@ quick_commands:
     command: "$HOME/.local/bin/buddy-switch-friend"
     category: route
     label: "Friend"
+    profile: buddy-friend
+    model: "gemma4:e4b"
+    personality: "warm"
   work:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-work"
     category: route
     label: "Work"
+    profile: buddy-work
+    model: "gemma4:31b"
+    personality: "focused"
 ```
 
-`/friends` is read-only on the standalone workaround. It reports the current
-route and gives users the exact switch commands, so route names do not need to
-be memorized. The Hermes fork recognizes the metadata and renders native
-Telegram selection buttons.
+`/friends` is read-only on the standalone workaround. A route press first
+records `SWITCHING`; a successful gateway start records `ACTIVE`, and an error
+records `FAILED` without replacing the last confirmed route. The Hermes fork
+recognizes the route metadata and renders labels such as `Work | gemma4:31b`.
 
 ## Tradeoffs
 

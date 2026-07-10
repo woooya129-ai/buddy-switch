@@ -1,55 +1,109 @@
-# Finding Friends and Routes
+# Finding Friends and Confirming Routes
 
-People should not need to memorize profile ids, model ids, or router names.
-Buddy Switch uses one discovery command everywhere:
+People should not need to memorize profile IDs, model IDs, or router names.
+Buddy Switch uses one status command everywhere:
 
 ```text
 /friends
 ```
 
-The names and personalities shown below are examples. This repository does not
-ship five completed personas.
+The names, models, and personalities below are examples. This repository does
+not ship finished private personas.
 
-## Telegram
+## Read the First Block Before Pressing Anything
 
-The Buddy Switch Hermes fork presents a mobile-first picker:
+`/friends` starts with a `YOU ARE TALKING TO` block:
 
-1. The first screen shows the current profile, personality, provider, and model.
-2. **Personality** opens configured `/personality` choices.
-3. **Model** opens Hermes's existing provider/model picker.
-4. **Routes** shows only quick commands marked `category: route`.
-5. Tapping a choice applies it and returns a visible confirmation.
+```text
+Status: ACTIVE IN THIS CHAT
+Name: Mika
+Profile or agent: buddy-work
+Personality: focused
+Model: ollama/gemma4:31b
+```
 
-The picker does not ask users to type model ids into a terminal-like form. When
-buttons are unavailable, it degrades to a short list with exact slash commands.
+That block is the answer to "who am I talking to now?" The route list below it
+only shows possible destinations.
 
-Recommended route metadata:
+## Hermes: A Route Switch Has Two Phases
+
+`/friend` and `/work` restart the selected Hermes profile gateway. The first
+reply is a request, not proof:
+
+```text
+Status: SWITCHING (not confirmed yet)
+```
+
+Wait 10-20 seconds, then run `/friends` again:
+
+- `ACTIVE`: the gateway start command succeeded and the shown route is the last
+  confirmed route.
+- `SWITCHING`: the change is still pending.
+- `FAILED`: the requested target did not start; the screen keeps showing the
+  last confirmed route.
+- `UNKNOWN`: no verified standalone switch has been recorded yet.
+
+The Hermes picker reads the live profile, personality, provider, and
+session-scoped model. The standalone `buddy-switch-routes` command reads the
+last confirmed gateway route plus configured Buddy model/personality labels.
+
+Recommended route metadata lets the button show what it will select:
 
 ```yaml
 quick_commands:
-  friend:
+  work:
     type: exec
-    command: "$HOME/.local/bin/buddy-switch-friend"
+    command: "$HOME/.local/bin/buddy-switch-work"
     category: route
-    label: "Friend"
-    description: "Light chat profile"
+    label: "Work"
+    description: "Tool-enabled work profile"
+    profile: buddy-work
+    model: "gemma4:31b"
+    personality: "focused"
 ```
 
-The `label` is shown on the button. The command key remains the typed fallback,
-so this example is still available as `/friend`.
+The Telegram route button becomes `Work | gemma4:31b`. The command remains
+available as `/work` and `/friends route work`.
+
+## OpenClaw: An @Name Opens Another Bot Chat
+
+OpenClaw binds each Telegram account to an isolated agent. With this example:
+
+```text
+@mika_qwen_bot  -> Mika agent using Qwen
+@mika_gemma_bot -> Mika agent using Gemma
+```
+
+pressing `@mika_gemma_bot` does not mutate the Qwen bot's current chat. It opens
+the Gemma bot's separate Telegram conversation. The original Qwen chat remains
+Qwen.
+
+The OpenClaw picker therefore:
+
+1. marks only the current bot/account as `THIS CHAT`;
+2. shows that bot's live agent, personality description, and model;
+3. labels destination buttons as `Name | Model`;
+4. tells the user to run `/friends` in the destination bot after opening it.
+
+`/models` changes only the model in the current OpenClaw chat. Opening another
+bot changes the whole agent boundary: identity/SOUL, model, tools, memory, and
+workspace.
 
 ## Terminal
-
-The standalone installation provides a no-network catalog:
 
 ```bash
 buddy-switch-routes
 ```
 
-It reads the protected Buddy Switch config and reports the last successful
-route, profile, model hint, SOUL draft path, and exact switch commands.
+The standalone output shows:
 
-The Hermes fork also accepts:
+- the last confirmed route;
+- friendly name, profile, model hint, and personality label;
+- `ACTIVE`, `SWITCHING`, `FAILED`, or `UNKNOWN`;
+- the last state-change time;
+- exact `/friend` and `/work` choices.
+
+The Hermes fork CLI also accepts:
 
 ```text
 /friends
@@ -58,30 +112,8 @@ The Hermes fork also accepts:
 /friends route <name>
 ```
 
-## OpenClaw
-
-OpenClaw routes Telegram accounts to isolated agents. Each agent already owns
-the pieces Buddy Switch calls a friend: workspace/SOUL, model, tools, memory,
-and identity.
-
-The OpenClaw fork's `/friends` command shows the current agent and model, then
-lists configured Telegram account bindings. For an account to become a direct
-Telegram button, set its display `name` to the bot's real `@username`:
-
-```json5
-channels: {
-  telegram: {
-    accounts: {
-      friend: { name: "@mika_chat_bot" },
-      work: { name: "@mika_work_bot" },
-    },
-  },
-}
-```
-
-Use `Persona - Role` as the human-facing label. Real Telegram bot usernames do
-not allow hyphens, so the equivalent callable name is
-`@<persona>_<role>_bot`, subject to Telegram's availability and naming rules.
+Always run `/friends` again after changing anything. The new status block is
+the confirmation; the button press by itself is not.
 
 ## Five Supported Variations
 
@@ -94,6 +126,3 @@ These are configuration patterns, not bundled personalities:
 | Changed model + fixed personality | Keep the SOUL, select another model |
 | Fixed model + fixed personality | Stay on the current route |
 | Changed model + changed personality | Route to another complete preset |
-
-The picker exposes the axes separately so users can choose only what they mean
-to change.

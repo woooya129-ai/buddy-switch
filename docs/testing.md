@@ -84,6 +84,18 @@ Stages follow the PR plan in `upstream-design.md`.
 | 21 | Forum-topic delivery | Inbound topic messages are not silently dropped while routing is active ([#52635](https://github.com/NousResearch/hermes-agent/issues/52635)) |
 | 22 | Profile home isolation | Scheduled/cron work never falls back to the default Hermes home ([#4707](https://github.com/NousResearch/hermes-agent/issues/4707)) |
 
+### Status and picker UX
+
+| # | Case | Expected |
+| --- | --- | --- |
+| 23 | Standalone route requested | Immediate output says `SWITCHING`, never `ACTIVE` |
+| 24 | Gateway start succeeds | `/friends` shows the target as the last confirmed route with `ACTIVE` |
+| 25 | Gateway start fails | `/friends` shows `FAILED` and keeps the prior confirmed route |
+| 26 | Duplicate route press | A second press is rejected while a switch lock exists |
+| 27 | Hermes picker current state | Header shows live profile, personality, provider, model, and `ACTIVE IN THIS CHAT` |
+| 28 | OpenClaw account link | Source chat stays unchanged; destination bot marks only its own account as `THIS CHAT` |
+| 29 | Route button label | A configured target is visible as `Name | Model` before selection |
+
 ## Config Validation
 
 When loading `channel_profiles`, `profile_aliases`, or `route_presets`:

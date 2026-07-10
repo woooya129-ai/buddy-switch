@@ -167,10 +167,14 @@ Example:
 ```bash
 FRIEND_PROFILE="buddy-friend"
 WORK_PROFILE="buddy-work"
+FRIEND_NAME="Mika Chat"
+WORK_NAME="Mika Work"
 
 # Optional display/unload hints; match the profile model when using Ollama.
 FRIEND_MODEL="gemma4:e4b"
 WORK_MODEL="gemma4:31b"
+FRIEND_PERSONA_NAME="warm"
+WORK_PERSONA_NAME="focused"
 ```
 
 The installer protects this shell config with mode `600` and its directory
@@ -211,11 +215,17 @@ quick_commands:
     command: "$HOME/.local/bin/buddy-switch-friend"
     category: route
     label: "Friend"
+    profile: buddy-friend
+    model: "gemma4:e4b"
+    personality: "warm"
   work:
     type: exec
     command: "$HOME/.local/bin/buddy-switch-work"
     category: route
     label: "Work"
+    profile: buddy-work
+    model: "gemma4:31b"
+    personality: "focused"
 ```
 
 Typical locations:
@@ -290,6 +300,11 @@ agent. The example config is in
 Once saved, starting OpenClaw loads those agents and bindings automatically.
 The Buddy Switch installer still does not edit them.
 
+Each real Telegram `@username` is a separate bot chat. Opening
+`@mika_gemma_bot` from `@mika_qwen_bot` does not change the Qwen chat into
+Gemma; it opens the Gemma agent's conversation. Run `/friends` in the
+destination bot to confirm its `THIS CHAT` agent and model.
+
 ## Terminal Commands
 
 Terminal commands are used for installation, discovery, persistent setup, and
@@ -317,13 +332,13 @@ shell commands such as `ollama list` into Telegram.
 
 | Goal | Hermes with Buddy Switch | Stock OpenClaw |
 | --- | --- | --- |
-| Show complete routes | `/friends` | Not added by this standalone repo; use the bound bot chats |
-| Select friend preset | `/friend` | Message the bot bound to the friend agent |
-| Select work preset | `/work` | Message the bot bound to the work agent |
+| Show who/model/personality now | `/friends`; require `ACTIVE` | Stock: `/model status`; Buddy fork: `/friends` in the current bot |
+| Select friend preset | `/friend`, then recheck `/friends` | Open the bot bound to the friend agent; this is a separate chat |
+| Select work preset | `/work`, then recheck `/friends` | Open the bot bound to the work agent; this is a separate chat |
 | Open configured model picker | `/model` | `/model` or `/model list` |
 | Pick a numbered model | Use Hermes's displayed picker | `/model <number>` |
 | Clear a temporary model choice | Start the intended profile again | `/model default` |
-| Inspect current model | `/friends` shows Buddy's hint; `/model` is authoritative | `/model status` |
+| Inspect current model | Hermes fork reads live session; standalone shows confirmed route plus model hint | `/friends` in that bot or `/model status` |
 
 On Hermes, `/friend` and `/work` switch the whole profile: model, SOUL,
 tools, memory, and gateway settings. On OpenClaw, talking to a separately bound
@@ -340,8 +355,9 @@ hermes profile list
 buddy-switch-routes
 ```
 
-For Hermes, send `/friends`, switch once, and send a new message. Confirm that
-the profile, model behavior, personality, and allowed tools match the route.
+For Hermes, send `/friends`, switch once, wait, then send `/friends` again.
+Continue only when the second screen says `ACTIVE` and shows the intended name,
+profile, model, and personality.
 
 For OpenClaw:
 

@@ -175,19 +175,26 @@ See `docs/install.md` for the full setup flow.
        command: "$HOME/.local/bin/buddy-switch-friend"
        category: route
        label: "Friend"
+       profile: buddy-friend
+       model: "gemma4:e4b"
+       personality: "warm"
      work:
        type: exec
        command: "$HOME/.local/bin/buddy-switch-work"
        category: route
        label: "Work"
+       profile: buddy-work
+       model: "gemma4:31b"
+       personality: "focused"
    ```
 
 8. Run `buddy-switch-routes` in a terminal or send `/friends` in Telegram to
    see the current profile, personality, model, and available routes. On stock
    Hermes this is a readable text menu; the Buddy Switch Hermes fork adds
    native Telegram buttons.
-9. Choose `/friend` or `/work`, wait for the gateway to switch, then send the
-   next message.
+9. Choose `/friend` or `/work`. The first reply says `SWITCHING`, which is only
+   a request. Wait 10-20 seconds and run `/friends` again. Continue only when it
+   shows `ACTIVE` with the intended name, profile, model, and personality.
 
 See [`docs/install.md`](docs/install.md) for the full beginner flow and
 [`docs/model-selection.md`](docs/model-selection.md) for Gemma 4 variants and
@@ -216,11 +223,11 @@ configured once in Hermes or OpenClaw.
 
 | Goal | Hermes with Buddy Switch | Stock OpenClaw |
 | --- | --- | --- |
-| Show complete friend/work routes | `/friends` | Use each agent's bound bot chat; verify bindings in the terminal |
-| Switch model + persona + tools together | `/friend` or `/work` | Open the Telegram bot bound to that agent |
+| Show who/model/personality now | `/friends`; require `ACTIVE` | Run `/friends` in the bot chat you are currently viewing |
+| Switch model + persona + tools together | `/friend` or `/work`, then recheck `/friends` | Open the bot bound to that agent; this opens a separate chat |
 | Pick among configured models | `/model` | `/model` or `/model list`, then `/model <number>` |
 | Return to the saved model | Start the intended profile again | `/model default` |
-| Show model details | `/friends` shows Buddy's configured hint; `/model` is authoritative | `/model status` |
+| Show model details | Hermes fork: `/friends` is live; standalone: confirmed route plus configured model hint | `/friends` in the current bot, or `/model status` |
 
 The standalone repo does not add `/friends` to stock OpenClaw. Its OpenClaw
 example uses native agents and Telegram account bindings; fork-only buttons are
@@ -283,13 +290,14 @@ and persona routing inside one gateway.
 
 ## Find Routes Without Memorizing Them
 
-`/friends` is the front door. It answers the three questions people usually
-forget:
+`/friends` is a status screen first and a picker second. Its first block answers
+the questions people usually forget:
 
 ```text
 Who am I talking to?  -> active profile or agent
 How will it answer?   -> personality / SOUL
 What is running it?   -> provider and model
+Did the change work?  -> ACTIVE, SWITCHING, or FAILED
 ```
 
 On Telegram, the Hermes fork renders **Personality**, **Model**, and **Routes**
@@ -297,6 +305,11 @@ as buttons. A model choice reuses Hermes's existing model picker; a personality
 choice reuses `/personality`; a route choice runs only a quick command marked
 `category: route`. If buttons are unavailable, the same screen includes exact
 text commands.
+
+The route buttons can show their target model when quick-command metadata
+contains `profile`, `model`, and `personality`. After `/friend` or `/work`, the
+initial `SWITCHING` result is not success. Run `/friends` again and trust the
+new route only when the screen says `ACTIVE` or `ACTIVE IN THIS CHAT`.
 
 In a terminal:
 
@@ -313,25 +326,20 @@ See [`docs/friends-picker.md`](docs/friends-picker.md) for the complete behavior
 
 ## Telegram Handles
 
-For a friendlier Telegram UX, Buddy Switch uses two compatible handle shapes.
-In the Hermes design they are configured local route names, not Telegram
-accounts. In OpenClaw, the most dependable version today is one real Telegram
-bot account per agent, with its account display name set to the bot's actual
-`@username`.
+Handle behavior depends on the platform. In the future Hermes design, a
+configured inline handle can route one message inside the same chat. In the
+current OpenClaw example, every real `@username` is a separate Telegram bot and
+therefore a separate chat, agent, model, and session.
 
 ```text
-@mika        -> persona route
-@forge       -> model route
-@mika-forge  -> combined model + persona route
+@mika_qwen_bot  -> opens Mika + Qwen in its own bot chat
+@mika_gemma_bot -> opens Mika + Gemma in its own bot chat
 ```
 
-Example messages:
-
-```text
-@mika explain this gently
-@forge check the logs
-@mika-forge summarize this for a human
-```
+Opening `@mika_gemma_bot` does **not** change the model of
+`@mika_qwen_bot`. After opening the destination bot, send `/friends` there. The
+`YOU ARE TALKING TO` block must show the expected bot, agent, personality, and
+model with `ACTIVE IN THIS CHAT`.
 
 The suggested upstream behavior is:
 

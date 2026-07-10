@@ -108,6 +108,8 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 
 FRIEND_PROFILE="${FRIEND_PROFILE:-buddy-friend}"
 WORK_PROFILE="${WORK_PROFILE:-buddy-work}"
+FRIEND_NAME="${FRIEND_NAME:-Friend}"
+WORK_NAME="${WORK_NAME:-Work}"
 
 HERMES_BIN="${HERMES_BIN:-hermes}"
 OLLAMA_BIN="${OLLAMA_BIN:-ollama}"
@@ -115,6 +117,10 @@ OLLAMA_BIN="${OLLAMA_BIN:-ollama}"
 # Optional. When set, the switch scripts try to unload the opposite model.
 FRIEND_MODEL="${FRIEND_MODEL:-}"
 WORK_MODEL="${WORK_MODEL:-}"
+
+# Human-readable labels shown by /friends and switch confirmations.
+FRIEND_PERSONA_NAME="${FRIEND_PERSONA_NAME:-friend SOUL}"
+WORK_PERSONA_NAME="${WORK_PERSONA_NAME:-work SOUL}"
 
 # Optional. macOS only: set to 1 if you want scripts to open Ollama.app.
 BUDDY_SWITCH_START_OLLAMA_APP="${BUDDY_SWITCH_START_OLLAMA_APP:-0}"

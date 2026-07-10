@@ -320,11 +320,15 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 # Buddy Switch local config.
 FRIEND_PROFILE="buddy-friend"
 WORK_PROFILE="buddy-work"
+FRIEND_NAME="Friend"
+WORK_NAME="Work"
 HERMES_BIN="hermes"
 OLLAMA_BIN="ollama"
 # Display/unload hints only. Configure the real model inside each Hermes profile.
 FRIEND_MODEL=""
 WORK_MODEL=""
+FRIEND_PERSONA_NAME="friend SOUL"
+WORK_PERSONA_NAME="work SOUL"
 BUDDY_SWITCH_START_OLLAMA_APP="0"
 BUDDY_NOTHINK_PROXY_PORT="11435"
 BUDDY_NOTHINK_PROXY_BIN="$HOME/.local/bin/nothink_proxy.py"

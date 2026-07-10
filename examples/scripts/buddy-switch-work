@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch/config.env}"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/buddy-switch"
+CONFIG_FILE="${BUDDY_SWITCH_CONFIG:-$CONFIG_DIR/config.env}"
 if [[ -f "$CONFIG_FILE" ]]; then
   # The config is sourced as shell. Refuse it if group/others can write to it,
   # otherwise a writable config becomes command injection into this script.
@@ -16,19 +17,51 @@ fi
 
 FRIEND_PROFILE="${FRIEND_PROFILE:-buddy-friend}"
 WORK_PROFILE="${WORK_PROFILE:-buddy-work}"
+WORK_NAME="${WORK_NAME:-Work}"
+WORK_PERSONA_NAME="${WORK_PERSONA_NAME:-work SOUL}"
 HERMES_BIN="${HERMES_BIN:-hermes}"
 OLLAMA_BIN="${OLLAMA_BIN:-ollama}"
 OLLAMA_PORT="${OLLAMA_PORT:-11434}"
 LOG_DIR="${BUDDY_SWITCH_LOG_DIR:-$HOME/.local/state/buddy-switch}"
 LOG_FILE="$LOG_DIR/mode-switch.log"
 CURRENT_ROUTE_FILE="${BUDDY_SWITCH_CURRENT_ROUTE_FILE:-$LOG_DIR/current-route}"
+SWITCH_STATUS_FILE="${BUDDY_SWITCH_STATUS_FILE:-$LOG_DIR/switch-status}"
+SWITCH_UPDATED_FILE="${BUDDY_SWITCH_UPDATED_FILE:-$LOG_DIR/switch-updated-at}"
+SWITCH_LOCK_DIR="${BUDDY_SWITCH_LOCK_DIR:-$LOG_DIR/switch.lock}"
 
 # Keep switch logs private to the current user.
 umask 077
 mkdir -p "$LOG_DIR"
 
+write_switch_state() {
+  local status="$1"
+  local route="$2"
+  local temp_status="${SWITCH_STATUS_FILE}.tmp.$$"
+  local temp_updated="${SWITCH_UPDATED_FILE}.tmp.$$"
+
+  printf '%s %s\n' "$status" "$route" >"$temp_status"
+  printf '%s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" >"$temp_updated"
+  mv -f "$temp_status" "$SWITCH_STATUS_FILE"
+  mv -f "$temp_updated" "$SWITCH_UPDATED_FILE"
+}
+
+if ! mkdir "$SWITCH_LOCK_DIR" 2>/dev/null; then
+  printf '%s\n' 'A Buddy Switch route change is already running. Use /friends to check it before pressing another route.'
+  exit 3
+fi
+
+write_switch_state switching work
+
 (
   set -euo pipefail
+  cleanup_switch() {
+    local rc="$?"
+    if [[ "$rc" -ne 0 ]]; then
+      write_switch_state failed work
+    fi
+    rmdir "$SWITCH_LOCK_DIR" 2>/dev/null || true
+  }
+  trap cleanup_switch EXIT
 
   if command -v lsof >/dev/null 2>&1; then
     if ! lsof -nP -iTCP:"$OLLAMA_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
@@ -50,6 +83,17 @@ mkdir -p "$LOG_DIR"
   "$HERMES_BIN" gateway stop >/dev/null 2>&1 || true
   "$HERMES_BIN" -p "$WORK_PROFILE" gateway start
   printf '%s\n' 'work' >"$CURRENT_ROUTE_FILE"
+  write_switch_state active work
 ) >>"$LOG_FILE" 2>&1 &
 
-printf '%s\n' "Switching to work mode. Send another message in 10-20 seconds."
+cat <<EOF
+Buddy Switch
+
+Requested:   $WORK_NAME
+Profile:     $WORK_PROFILE
+Model:       ${WORK_MODEL:-profile default}
+Personality: $WORK_PERSONA_NAME
+Status:      SWITCHING (not confirmed yet)
+
+Run /friends in 10-20 seconds. Only ACTIVE means the gateway switch succeeded.
+EOF
