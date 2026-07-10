@@ -8,7 +8,7 @@ Checked on 2026-07-10:
 | Upstream | Main commit checked | License | Buddy Switch role |
 | --- | --- | --- | --- |
 | Hermes Agent | `d2e64fcb89cd180c6657bbe60723980fc5498778` | MIT | Primary implementation target |
-| OpenClaw | `8dd45e864e045d6c54ecd57a064d80378900b5e3` | MIT | Behavior reference and optional handle-UX experiment |
+| OpenClaw | `e327a3dca1929f3ea4e2fad347ad9166b0c1694f` | MIT | Behavior reference and optional handle-UX experiment |
 
 Always rebase a feature branch before coding because both upstream repositories
 move quickly.
