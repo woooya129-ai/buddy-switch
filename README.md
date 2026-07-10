@@ -44,6 +44,8 @@ the English README; corrections and additional language PRs are welcome.
 - `docs/fork-readiness.md`: the verified Hermes and OpenClaw fork baseline.
 - `docs/personas.md`: how SOUL files, language policy, and model choice fit
   together.
+- `docs/model-selection.md`: how to discover, compare, and copy an exact model
+  ID instead of guessing from a family name.
 - `docs/friends-picker.md`: the shared `/friends` discovery flow for Telegram
   and terminals.
 - `examples/`: generic config, scripts, launchd template, and an optional
@@ -76,6 +78,25 @@ The installer shows real step progress, then a short ASCII eye-opening scene.
 On a first interactive install it continues into a small setup wizard for
 profile names, response language, and editable SOUL drafts. It never overwrites
 an existing Hermes `SOUL.md`.
+
+### Does It Apply Automatically After Installation?
+
+**Not yet.** The installer does not edit a live Hermes or OpenClaw
+configuration. This is deliberate because those files contain provider
+settings, bot tokens, user IDs, and private SOUL content.
+
+| Part | Installed automatically? | One-time action still required |
+| --- | --- | --- |
+| Buddy Switch commands and local config | Yes | Review `~/.config/buddy-switch/config.env` |
+| Starter SOUL drafts | Yes | Review and place them in the matching profile/workspace |
+| Hermes profiles, models, Telegram, quick commands | No | Create and configure both profiles, then add the quick-command block |
+| OpenClaw agents, models, Telegram accounts, bindings | No | Create agents and bind each configured Telegram account |
+
+After that one-time connection is complete, the saved setup is automatic:
+starting a Hermes profile loads its own model, `SOUL.md`, tools, and Telegram
+settings; starting OpenClaw loads its saved agents and bindings. Buddy Switch
+then chooses an already-configured route. It does not invent or replace the
+route's model at switch time.
 
 ## Where Does It Go?
 
@@ -115,15 +136,32 @@ See `docs/install.md` for the full setup flow.
 1. Install Hermes and create two profiles, for example:
 
    ```bash
-   hermes profile create buddy-friend --no-skills
+   hermes profile create buddy-friend
    hermes profile create buddy-work
    ```
 
-2. Install Buddy Switch with the one-line installer above.
-3. Follow the first-run prompts, or run `buddy-switch-init` later.
-4. Review the generated SOUL drafts and place the final versions in the
+2. If using local Ollama, install one exact model variant rather than guessing
+   its name:
+
+   ```bash
+   ollama pull gemma4:e4b
+   ollama list
+   ollama show gemma4:e4b
+   ```
+
+3. Configure the real model inside each Hermes profile. For this example,
+   choose the Ollama custom endpoint and copy `gemma4:e4b` exactly:
+
+   ```bash
+   hermes -p buddy-friend model
+   hermes -p buddy-work model
+   ```
+
+4. Install Buddy Switch with the one-line installer above.
+5. Follow the first-run prompts, or run `buddy-switch-init` later.
+6. Review the generated SOUL drafts and place the final versions in the
    matching Hermes profile directories. Back up an existing `SOUL.md` first.
-5. Add quick commands like this to both Hermes profile configs:
+7. Add quick commands like this to both Hermes profile configs:
 
    ```yaml
    quick_commands:
@@ -144,14 +182,66 @@ See `docs/install.md` for the full setup flow.
        label: "Work"
    ```
 
-6. Run `buddy-switch-routes` in a terminal or send `/friends` in Telegram to
+8. Run `buddy-switch-routes` in a terminal or send `/friends` in Telegram to
    see the current profile, personality, model, and available routes. On stock
    Hermes this is a readable text menu; the Buddy Switch Hermes fork adds
    native Telegram buttons.
-7. Choose `/friend` or `/work`, wait for the gateway to switch, then send the
+9. Choose `/friend` or `/work`, wait for the gateway to switch, then send the
    next message.
 
-See `examples/hermes/config.example.yaml` for a fuller example.
+See [`docs/install.md`](docs/install.md) for the full beginner flow and
+[`docs/model-selection.md`](docs/model-selection.md) for Gemma 4 variants and
+exact model-ID rules.
+
+## Command Cheat Sheet
+
+### Terminal
+
+| Goal | Command | What it changes |
+| --- | --- | --- |
+| List installed Ollama models | `ollama list` | Nothing; copy an exact `NAME` from here |
+| Inspect the example model | `ollama show gemma4:e4b` | Nothing |
+| List Hermes profiles | `hermes profile list` | Nothing |
+| Configure a profile's real model | `hermes -p buddy-friend model` | That Hermes profile |
+| Show Buddy Switch routes | `buddy-switch-routes` | Nothing |
+| Switch to friend mode | `buddy-switch-friend` | Starts the configured friend gateway |
+| Switch to work mode | `buddy-switch-work` | Starts the configured work gateway |
+| Discover OpenClaw Ollama IDs | `openclaw models list --provider ollama` | Nothing |
+| Verify OpenClaw agent routes | `openclaw agents list --bindings` | Nothing |
+
+### Telegram
+
+These commands work only after the corresponding Telegram gateway/account is
+configured once in Hermes or OpenClaw.
+
+| Goal | Hermes with Buddy Switch | Stock OpenClaw |
+| --- | --- | --- |
+| Show complete friend/work routes | `/friends` | Use each agent's bound bot chat; verify bindings in the terminal |
+| Switch model + persona + tools together | `/friend` or `/work` | Open the Telegram bot bound to that agent |
+| Pick among configured models | `/model` | `/model` or `/model list`, then `/model <number>` |
+| Return to the saved model | Start the intended profile again | `/model default` |
+| Show model details | `/friends` shows Buddy's configured hint; `/model` is authoritative | `/model status` |
+
+The standalone repo does not add `/friends` to stock OpenClaw. Its OpenClaw
+example uses native agents and Telegram account bindings; fork-only buttons are
+optional and are not required by this guide.
+
+## Route Name vs Model Name
+
+Never type a friendly router name where a provider expects a model ID:
+
+| Value | Example | Meaning |
+| --- | --- | --- |
+| Route command | `friend` | Runs `/friend` |
+| Hermes profile | `buddy-friend` | Owns model, SOUL, tools, memory, and Telegram config |
+| Ollama family alias | `gemma4` | Convenient default tag; may move over time |
+| Exact Ollama ID | `gemma4:e4b` | Copy from `ollama list` |
+| OpenClaw model reference | `ollama/gemma4:e4b` | Exact provider plus model |
+
+`FRIEND_MODEL` and `WORK_MODEL` in Buddy Switch are only display and
+Ollama-unload hints. The actual Hermes model is the one saved by
+`hermes -p <profile> model`; the actual OpenClaw model is the one saved on its
+agent. Route switching selects that profile or agent.
 
 ## Persona and Response Language
 

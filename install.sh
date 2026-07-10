@@ -148,6 +148,9 @@ fi
 cat <<EOF
 Buddy Switch installed.
 
+Connection status:
+  Helpers and SOUL drafts are local. No live Hermes or OpenClaw config was changed.
+
 Commands:
   $BIN_DIR/buddy-switch-friend
   $BIN_DIR/buddy-switch-work
@@ -159,8 +162,8 @@ Config:
 
 Next:
   1. $setup_next
-  2. Add the quick_commands block from the README to both Hermes profile configs.
-  3. Run buddy-switch-routes in a terminal, or send /friends in Telegram.
+  2. Configure the real model in each Hermes profile, then add the README quick_commands block.
+  3. After that one-time connection, run buddy-switch-routes or send /friends in Telegram.
 EOF
 
 if [[ "$created_config" == "0" ]]; then

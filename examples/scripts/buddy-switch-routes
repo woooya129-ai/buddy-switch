@@ -51,7 +51,7 @@ Buddy Switch
 Current
   Route:       $current_route
   Profile:     $current_profile
-  Model:       $current_model
+  Model hint:  $current_model
   Personality: $current_persona
 
 Available routes
@@ -60,4 +60,6 @@ Available routes
 
 Telegram: send /friend or /work. On the Buddy Switch Hermes fork, /friends opens buttons.
 Terminal: run buddy-switch-friend or buddy-switch-work.
+Model source: the target Hermes profile config. FRIEND_MODEL/WORK_MODEL are display and Ollama-unload hints only.
+Find exact local Ollama IDs with: ollama list
 EOF

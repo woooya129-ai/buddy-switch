@@ -1,10 +1,10 @@
 # Minimal work profile example.
 
 model:
-  provider: openai-compatible
-  name: "__WORK_MODEL_NAME__"
+  provider: custom
+  # Copy an exact name from `ollama list`, for example: gemma4:31b
+  default: "__WORK_MODEL_NAME__"
   base_url: "http://127.0.0.1:11434/v1"
-  api_key: "ollama"
 
 generation:
   max_tokens: 4096
@@ -21,4 +21,3 @@ quick_commands:
     command: "$HOME/.local/bin/buddy-switch-work"
 
 # Enable the toolsets you trust for work mode in your own Hermes config.
-

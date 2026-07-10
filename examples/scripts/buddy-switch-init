@@ -322,6 +322,7 @@ FRIEND_PROFILE="buddy-friend"
 WORK_PROFILE="buddy-work"
 HERMES_BIN="hermes"
 OLLAMA_BIN="ollama"
+# Display/unload hints only. Configure the real model inside each Hermes profile.
 FRIEND_MODEL=""
 WORK_MODEL=""
 BUDDY_SWITCH_START_OLLAMA_APP="0"

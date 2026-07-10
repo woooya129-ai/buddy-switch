@@ -1,10 +1,10 @@
 # Minimal friend profile example.
 
 model:
-  provider: openai-compatible
-  name: "__FRIEND_MODEL_NAME__"
+  provider: custom
+  # Copy an exact name from `ollama list`, for example: gemma4:e4b
+  default: "__FRIEND_MODEL_NAME__"
   base_url: "http://127.0.0.1:11435/v1"
-  api_key: "ollama"
 
 generation:
   max_tokens: 512
@@ -22,4 +22,3 @@ quick_commands:
 
 # For a lightweight companion profile, keep heavy tools disabled unless you
 # explicitly want them available.
-
