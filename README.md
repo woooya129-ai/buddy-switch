@@ -225,6 +225,7 @@ configured once in Hermes or OpenClaw.
 | --- | --- | --- |
 | Show who/model/personality now | `/friends`; require `ACTIVE` | Run `/friends` in the bot chat you are currently viewing |
 | Switch model + persona + tools together | `/friend` or `/work`, then recheck `/friends` | Open the bot bound to that agent; this opens a separate chat |
+| Switch this chat to a name+model combination | `@name_model` (for example `@mika_gemma`), then recheck `/friends`; same chat, persistent | `/model` changes only the current bot chat's model |
 | Pick among configured models | `/model` | `/model` or `/model list`, then `/model <number>` |
 | Return to the saved model | Start the intended profile again | `/model default` |
 | Show model details | Hermes fork: `/friends` is live; standalone: confirmed route plus configured model hint | `/friends` in the current bot, or `/model status` |
@@ -326,29 +327,44 @@ See [`docs/friends-picker.md`](docs/friends-picker.md) for the complete behavior
 
 ## Telegram Handles
 
-Handle behavior depends on the platform. In the future Hermes design, a
-configured inline handle can route one message inside the same chat. In the
-current OpenClaw example, every real `@username` is a separate Telegram bot and
-therefore a separate chat, agent, model, and session.
+`@name_model` handles such as `@mika_qwen` and `@mika_gemma` are **local
+routing aliases inside the current chat**. They are not Telegram bot accounts,
+and they never open another conversation:
 
 ```text
-@mika_qwen_bot  -> opens Mika + Qwen in its own bot chat
-@mika_gemma_bot -> opens Mika + Gemma in its own bot chat
+@mika_qwen  -> switch THIS chat to the Mika + Qwen combination (persistent)
+@mika_gemma -> switch THIS chat to the Mika + Gemma combination (persistent)
 ```
 
-Opening `@mika_gemma_bot` does **not** change the model of
-`@mika_qwen_bot`. After opening the destination bot, send `/friends` there. The
-`YOU ARE TALKING TO` block must show the expected bot, agent, personality, and
-model with `ACTIVE IN THIS CHAT`.
+The baseline semantics are:
 
-The suggested upstream behavior is:
+- `@name_model`: persistent router change for the current chat.
+- `/friends`: shows the name, personality, and model bound to the current chat.
+- `/friend`, `/work`: full profile change in the same chat.
+- No extra Telegram bot chats are created.
 
-1. An inline `@handle` can route one message.
-2. `/profile @handle` can bind the current chat to that route.
-3. `/profile default` can reset the chat to the gateway default.
+In the Buddy Switch Hermes fork, a message that is exactly `@<route>` runs the
+matching `category: route` quick command. A model alias uses a session-scoped
+model switch so only this chat changes:
 
-Until Hermes supports inline handles natively, open `/friends` and tap a route,
-or type `/friend` and `/work` as the simple fallback.
+```yaml
+quick_commands:
+  mika_gemma:
+    type: alias
+    category: route
+    label: "Mika + Gemma"
+    target: "model ollama/gemma4:e4b --session"
+```
+
+After sending `@mika_gemma`, run `/friends` again: it must show the new model
+for this chat. Handles that end in `bot`, appear inside a longer message, or
+are not configured as routes are never captured; they stay normal messages.
+
+Opening a **separate** bot conversation happens only in the OpenClaw multi-bot
+approach, where each real `@botusername` link is its own bot account, chat,
+agent, model, and session. Do not mix the two mechanisms: `@mika_gemma` is a
+local same-chat alias, while `@mika_gemma_bot` is a real bot account whose
+link opens a different chat and changes nothing in the current one.
 
 ## Representative Examples
 

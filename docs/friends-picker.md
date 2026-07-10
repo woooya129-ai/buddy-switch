@@ -65,8 +65,42 @@ quick_commands:
 The Telegram route button becomes `Work | gemma4:31b`. The command remains
 available as `/work` and `/friends route work`.
 
-## OpenClaw: An @Name Opens Another Bot Chat
+## Hermes: `@name_model` Switches This Chat
 
+`@name_model` handles such as `@mika_qwen` and `@mika_gemma` are local routing
+aliases, not Telegram bot accounts. Sending one as the entire message
+persistently re-routes the **current** chat; no other conversation opens:
+
+```text
+@mika_qwen  -> this chat becomes Mika + Qwen (persistent)
+@mika_gemma -> this chat becomes Mika + Gemma (persistent)
+```
+
+Each handle is a `category: route` quick command. A model alias targets a
+session-scoped model switch so only this chat changes:
+
+```yaml
+quick_commands:
+  mika_gemma:
+    type: alias
+    category: route
+    label: "Mika + Gemma"
+    target: "model ollama/gemma4:e4b --session"
+```
+
+After sending `@mika_gemma`, run `/friends` again. The `YOU ARE TALKING TO`
+block must show the new model for this chat — if it still shows the previous
+model, that is a bug, not the expected behavior. (The fork once showed the
+previous model after a gateway restart because `/friends` read only the
+in-memory override; it now rehydrates the persisted per-chat override first.)
+
+Handles that end in `bot`, sit inside a longer message, or are not configured
+as routes are never captured; they remain normal messages.
+
+## OpenClaw Multi-Bot: A Real `@botusername` Opens Another Bot Chat
+
+This separate-chat behavior belongs **only** to the OpenClaw multi-bot
+approach, where each real Telegram `@botusername` is its own bot account.
 OpenClaw binds each Telegram account to an isolated agent. With this example:
 
 ```text
@@ -76,7 +110,8 @@ OpenClaw binds each Telegram account to an isolated agent. With this example:
 
 pressing `@mika_gemma_bot` does not mutate the Qwen bot's current chat. It opens
 the Gemma bot's separate Telegram conversation. The original Qwen chat remains
-Qwen.
+Qwen. Do not confuse these real `_bot` usernames with the same-chat
+`@name_model` aliases above.
 
 The OpenClaw picker therefore:
 

@@ -228,6 +228,20 @@ quick_commands:
     personality: "focused"
 ```
 
+Optional same-chat model aliases (Buddy Switch Hermes fork): a message that is
+exactly `@<route name>` runs the matching `category: route` quick command in
+the **current** chat. Use a session-scoped model switch as the target so only
+this chat changes, then confirm with `/friends`:
+
+```yaml
+quick_commands:
+  mika_gemma:
+    type: alias
+    category: route
+    label: "Mika + Gemma"
+    target: "model ollama/gemma4:e4b --session"
+```
+
 Typical locations:
 
 ```text
@@ -305,6 +319,13 @@ Each real Telegram `@username` is a separate bot chat. Opening
 Gemma; it opens the Gemma agent's conversation. Run `/friends` in the
 destination bot to confirm its `THIS CHAT` agent and model.
 
+This separate-chat behavior applies **only** to real `@botusername` accounts
+in the OpenClaw multi-bot setup. It is not how `@name_model` aliases such as
+`@mika_gemma` work on the Hermes side: those are local routing aliases that
+persistently switch the **current** chat's name+model combination without
+opening any other conversation. See
+[`friends-picker.md`](friends-picker.md) for the same-chat alias flow.
+
 ## Terminal Commands
 
 Terminal commands are used for installation, discovery, persistent setup, and
@@ -335,6 +356,7 @@ shell commands such as `ollama list` into Telegram.
 | Show who/model/personality now | `/friends`; require `ACTIVE` | Stock: `/model status`; Buddy fork: `/friends` in the current bot |
 | Select friend preset | `/friend`, then recheck `/friends` | Open the bot bound to the friend agent; this is a separate chat |
 | Select work preset | `/work`, then recheck `/friends` | Open the bot bound to the work agent; this is a separate chat |
+| Switch this chat to a name+model combination | `@name_model` (for example `@mika_gemma`), then recheck `/friends`; same chat, persistent | `/model` changes only the current bot chat's model |
 | Open configured model picker | `/model` | `/model` or `/model list` |
 | Pick a numbered model | Use Hermes's displayed picker | `/model <number>` |
 | Clear a temporary model choice | Start the intended profile again | `/model default` |

@@ -36,7 +36,7 @@ Telegram DM A      -> profile: buddy-friend
 Telegram group B   -> profile: buddy-work
 Discord channel C  -> profile: research
 /profile coder     -> bind this chat to coder
-@writer draft this -> route one turn to writer
+@writer            -> persistently switch this chat to writer
 ```
 
 ## Proposed Surfaces
@@ -165,15 +165,19 @@ route_presets:
 
 Suggested behavior:
 
-- Inline `@handle` routes one turn.
-- `/profile @handle` binds the current chat to that route.
+- A message that is exactly `@handle` persistently re-routes the current chat
+  to that route. The chat itself never changes and no new bot chat opens.
+- `/profile @handle` is an equivalent explicit form of the same binding.
 - `/profile default` clears the binding.
-- Unknown handles fail visibly instead of falling back silently.
-- Routing precedence is explicit inline handle, runtime profile binding, static
-  platform route, then gateway default.
+- `/friends` must reflect the new binding immediately: after `@handle`, the
+  status block shows the new name, personality, and model for this chat.
+- A configured route that fails to apply reports `FAILED` visibly.
+- Routing precedence is runtime chat binding, static platform route, then
+  gateway default.
 
-Hermes should only resolve handles listed in config. That avoids accidentally
-capturing real Telegram usernames or bot mentions.
+Hermes should only resolve handles listed in config; handles inside longer
+messages, handles ending in `bot`, and unlisted handles stay normal messages.
+That avoids accidentally capturing real Telegram usernames or bot mentions.
 
 ## Isolation Rules
 

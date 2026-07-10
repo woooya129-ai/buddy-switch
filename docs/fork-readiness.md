@@ -78,9 +78,11 @@ openclaw agents bindings --agent work
 ```
 
 The OpenClaw fork should not recreate agent routing. Its useful Buddy Switch
-experiment is a configured, local `@handle` that routes one message or binds a
-conversation while preserving OpenClaw's existing agent isolation and security
-rules. Start with a design and tests before changing runtime code.
+experiment is a configured, local `@handle` that persistently binds the
+current conversation to a route — matching the Hermes-side `@name_model`
+semantics (same chat, no new bot chat) — while preserving OpenClaw's existing
+agent isolation and security rules. Start with a design and tests before
+changing runtime code.
 
 Suggested branch: `research/buddy-switch-handle-routing`.
 

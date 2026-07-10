@@ -26,6 +26,16 @@ quick_commands:
     profile: buddy-work
     model: "__WORK_MODEL_NAME__"
     personality: "__WORK_PERSONA_NAME__"
+  # Same-chat model alias (Buddy Switch Hermes fork): sending a message that
+  # is exactly "@mika_gemma" persistently switches THIS chat's model. It is a
+  # local routing alias, not a Telegram bot account, and it never opens
+  # another chat. --session keeps the change scoped to the current chat.
+  mika_gemma:
+    type: alias
+    category: route
+    label: "Mika + Gemma"
+    description: "Switch this chat to the Mika + Gemma combination"
+    target: "model ollama/__FRIEND_MODEL_NAME__ --session"
 
 # Future upstream-friendly shape. These aliases should become config, not
 # hard-coded commands.

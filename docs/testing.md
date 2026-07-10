@@ -70,10 +70,11 @@ Stages follow the PR plan in `upstream-design.md`.
 
 | # | Case | Expected |
 | --- | --- | --- |
-| 15 | Inline `@handle` | Routes exactly one turn, then reverts |
-| 16 | `/profile @handle` | Binds the chat to that route |
-| 17 | Unknown handle | Fails visibly, no silent fallback |
-| 18 | Precedence | Inline handle > runtime binding > static route > gateway default |
+| 15 | Bare `@handle` message | Persistently re-routes the current chat; next `/friends` shows the new name and model |
+| 16 | `/profile @handle` | Equivalent explicit form of the same chat binding |
+| 17 | Unknown or embedded handle, or `@...bot` | Stays a normal message; never captured as a route |
+| 18 | Precedence | Runtime chat binding > static route > gateway default |
+| 18b | `/friends` after `@handle` and gateway restart | Still shows the switched model (persisted override is rehydrated) |
 
 ### Cross-cutting
 
@@ -103,8 +104,8 @@ When loading `channel_profiles`, `profile_aliases`, or `route_presets`:
 - Unknown keys produce a warning, not a failure, for forward compatibility.
 - Duplicate aliases or routes pointing at missing profiles fail the load with
   a clear message.
-- Routing precedence is fixed and documented: explicit inline handle, then
-  runtime profile binding, then static platform route, then gateway default.
+- Routing precedence is fixed and documented: runtime chat binding (including
+  a bare `@handle` switch), then static platform route, then gateway default.
 
 ## Definition of Done
 
